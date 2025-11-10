@@ -1,6 +1,7 @@
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey,Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+from datetime import datetime
 import uuid
 from database import Base
 
@@ -57,11 +58,20 @@ class OfertaActual(Base):
     __table_args__ = {"schema": "precios"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    producto_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.productos.id"))
-    tienda_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.tiendas.id"))
-    precio = Column(Float)
-    fecha_actualizacion = Column(DateTime)
 
+    # Relaciones con otras tablas
+    tienda_producto_id = Column(UUID(as_uuid=True), nullable=False)
+    producto_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.productos.id"), nullable=False)
+    tienda_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.tiendas.id"))
+
+    # Columnas adicionales según tu estructura real
+    precio_centavos = Column(Integer, nullable=False)
+    moneda = Column(String, nullable=False, default="CLP")
+    disponibilidad = Column(String)
+    fecha_listado = Column(DateTime(timezone=True), nullable=False)
+    fecha_scraping = Column(DateTime(timezone=True), nullable=False, default=datetime.now)
+
+    # Relaciones ORM
     producto = relationship("Producto", back_populates="ofertas")
     tienda = relationship("Tienda", back_populates="ofertas")
 

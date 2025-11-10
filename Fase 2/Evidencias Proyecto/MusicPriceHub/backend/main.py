@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import Base, engine
-from routers import productos, historial,alertas
+from routers import productos, historial,alertas,scraping
 
 
 Base.metadata.create_all(bind=engine)
@@ -13,6 +13,7 @@ app = FastAPI(
 
 app.include_router(productos.router)
 app.include_router(historial.router)
+app.include_router(scraping.router)
 
 @app.get("/")
 def inicio():
