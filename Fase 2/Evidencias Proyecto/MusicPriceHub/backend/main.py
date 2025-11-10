@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from database import Base, engine
 from routers import productos, historial,alertas,scraping
-
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
@@ -22,3 +22,16 @@ def inicio():
 app.include_router(productos.router)
 app.include_router(alertas.router)
 
+origins = [
+    "http://localhost:5173",                   
+    "https://musicpricehub-site.onrender.com", 
+]
+
+# Activar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

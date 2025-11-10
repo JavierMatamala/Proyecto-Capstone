@@ -11,10 +11,13 @@ export const api = axios.create({
 // === Endpoints principales ===
 
 // Obtener todos los productos
-export const getProductos = async () => {
-  const response = await api.get("/api/productos/");
-  return response.data;
-};
+export async function getProductos() {
+  const response = await fetch("https://musicpricehub.onrender.com/api/productos/");
+  if (!response.ok) {
+    throw new Error("Error en la API");
+  }
+  return await response.json();
+}
 
 // Crear producto nuevo
 export const createProducto = async (producto) => {
