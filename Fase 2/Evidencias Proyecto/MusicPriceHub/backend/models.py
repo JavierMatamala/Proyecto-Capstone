@@ -1,9 +1,10 @@
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey,Integer
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Integer, Text, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
 from database import Base
+
 
 # ============================
 # 🔹 MODELO: USUARIO
@@ -13,10 +14,34 @@ class Usuario(Base):
     __table_args__ = {"schema": "autenticacion"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    nombre = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False)
+    correo = Column(String, nullable=False, unique=True)
+    contrasena_hash = Column(Text, nullable=False)
+    es_admin = Column(Boolean, default=False)
+    creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
+    actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
 
-    alertas = relationship("AlertaPrecio", back_populates="usuario")
+    # 🔗 Relaciones
+    perfil = relationship("Perfil", back_populates="usuario", uselist=False)
+    alertas_precio = relationship("AlertaPrecio", back_populates="usuario", cascade="all, delete-orphan")
+
+
+# ============================
+# 🔹 MODELO: PERFIL
+# ============================
+class Perfil(Base):
+    __tablename__ = "perfiles"
+    __table_args__ = {"schema": "autenticacion"}
+
+    usuario_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), primary_key=True)
+    nombre_publico = Column(String, nullable=False)
+    pais = Column(String)
+    ciudad = Column(String)
+    avatar_url = Column(String)
+    creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
+    actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # 🔗 Relación inversa hacia Usuario
+    usuario = relationship("Usuario", back_populates="perfil")
 
 
 # ============================
@@ -33,7 +58,7 @@ class Producto(Base):
 
     ofertas = relationship("OfertaActual", back_populates="producto")
     historial = relationship("HistorialPrecio", back_populates="producto")
-    alertas = relationship("AlertaPrecio", back_populates="producto")
+    alertas_precio = relationship("AlertaPrecio", back_populates="producto")
 
 
 # ============================
@@ -58,20 +83,16 @@ class OfertaActual(Base):
     __table_args__ = {"schema": "precios"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
-    # Relaciones con otras tablas
     tienda_producto_id = Column(UUID(as_uuid=True), nullable=False)
     producto_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.productos.id"), nullable=False)
     tienda_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.tiendas.id"))
 
-    # Columnas adicionales según tu estructura real
     precio_centavos = Column(Integer, nullable=False)
     moneda = Column(String, nullable=False, default="CLP")
     disponibilidad = Column(String)
     fecha_listado = Column(DateTime(timezone=True), nullable=False)
     fecha_scraping = Column(DateTime(timezone=True), nullable=False, default=datetime.now)
 
-    # Relaciones ORM
     producto = relationship("Producto", back_populates="ofertas")
     tienda = relationship("Tienda", back_populates="ofertas")
 
@@ -95,14 +116,16 @@ class HistorialPrecio(Base):
 # 🔹 MODELO: ALERTA DE PRECIO
 # ============================
 class AlertaPrecio(Base):
-    __tablename__ = "alertas_precios"
+    __tablename__ = "alertas_precio"
     __table_args__ = {"schema": "alertas"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    producto_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.productos.id"))
-    usuario_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"))
-    precio_objetivo = Column(Float, nullable=False)
-    fecha_creacion = Column(DateTime)
+    usuario_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=False)
+    producto_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.productos.id"), nullable=False)
+    precio_objetivo = Column(Integer, nullable=False)
+    moneda = Column(Text, nullable=False, default="CLP")
+    activa = Column(Boolean, nullable=False, default=True)
+    creada_en = Column(DateTime(timezone=True), default=datetime.utcnow)
 
-    producto = relationship("Producto", back_populates="alertas")
-    usuario = relationship("Usuario", back_populates="alertas")
+    usuario = relationship("Usuario", back_populates="alertas_precio")
+    producto = relationship("Producto", back_populates="alertas_precio")

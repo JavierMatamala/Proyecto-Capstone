@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, constr
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
@@ -29,19 +29,31 @@ class ProductoMostrar(ProductoBase):
     class Config:
         orm_mode = True
 
+# ---- Crear usuario ----
+class UsuarioCrear(BaseModel):
+    nombre: str
+    correo: EmailStr
+    contraseña: constr(min_length=6, max_length=72)
 
-from pydantic import BaseModel
-from typing import Optional, List
-from uuid import UUID
-from datetime import datetime
-
-# ---- Usuario ----
+# ---- Mostrar usuario ----
 class UsuarioMostrar(BaseModel):
     id: UUID
-    nombre: str
-    email: str
+    correo: EmailStr
+    es_admin: bool
+    perfil: Optional["PerfilMostrar"]
+
     class Config:
-        orm_mode = True
+        from_attributes = True
+ # ---- Mostrar perfil ---- 
+class PerfilMostrar(BaseModel):
+    nombre_publico: str
+    pais: Optional[str]
+    ciudad: Optional[str]
+    avatar_url: Optional[str]
+
+    class Config:
+        from_attributes = True
+UsuarioMostrar.update_forward_refs()
 
 # ---- Alerta ----
 class AlertaBase(BaseModel):
@@ -50,7 +62,7 @@ class AlertaBase(BaseModel):
     fecha_creacion: Optional[datetime]
     usuario: Optional[UsuarioMostrar]
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ---- Oferta ----
 class OfertaBase(BaseModel):
@@ -59,7 +71,7 @@ class OfertaBase(BaseModel):
     fecha_actualizacion: Optional[datetime]
     tienda_id: UUID
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ---- Producto ----
 class ProductoBase(BaseModel):
@@ -76,7 +88,7 @@ class ProductoMostrar(ProductoBase):
     alertas: Optional[List[AlertaBase]] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ============================
 # 🔹 SCHEMAS DE ALERTAS
@@ -95,4 +107,4 @@ class AlertaBase(BaseModel):
     usuario: Optional["UsuarioMostrar"]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
