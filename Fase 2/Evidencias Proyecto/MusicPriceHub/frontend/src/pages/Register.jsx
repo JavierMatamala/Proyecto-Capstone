@@ -1,28 +1,66 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserPlus, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 function Register() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     nombre: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    correo: "",
+    contraseña: "",
+    confirmar: "",
   });
+  const [error, setError] = useState("");
+  const [exito, setExito] = useState("");
 
+  // 🔹 Manejar cambios en los campos
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // 🔹 Manejar envío del formulario
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Las contraseñas no coinciden");
+    setError("");
+    setExito("");
+
+    // Validaciones básicas
+    if (!formData.nombre || !formData.correo || !formData.contraseña || !formData.confirmar) {
+      setError("Por favor, completa todos los campos.");
       return;
     }
-    console.log("Datos del registro:", formData);
+
+    if (formData.contraseña !== formData.confirmar) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://musicpricehub.onrender.com/auth/registro", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: formData.nombre,
+          correo: formData.correo,
+          contraseña: formData.contraseña,
+        }),
+      });
+
+      if (response.ok) {
+        setExito("✅ Cuenta creada exitosamente. Redirigiendo al inicio de sesión...");
+        setTimeout(() => navigate("/login"), 2000);
+      } else {
+        const data = await response.json();
+        setError(data.detail || "Error al registrar la cuenta.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Error de conexión con la API.");
+    }
   };
 
   return (
@@ -46,6 +84,10 @@ function Register() {
           Completa los siguientes campos para registrarte
         </p>
 
+        {/* Mensajes */}
+        {error && <p className="text-red-400 text-center mt-3">{error}</p>}
+        {exito && <p className="text-green-400 text-center mt-3">{exito}</p>}
+
         {/* Formulario */}
         <form
           onSubmit={handleSubmit}
@@ -67,16 +109,14 @@ function Register() {
             />
           </div>
 
-          {/* Email */}
+          {/* Correo */}
           <div className="w-4/5 text-center">
-            <label className="block text-sm text-gray-300 mb-1">
-              Correo electrónico
-            </label>
+            <label className="block text-sm text-gray-300 mb-1">Correo electrónico</label>
             <input
               type="email"
-              name="email"
+              name="correo"
               placeholder="ejemplo@correo.com"
-              value={formData.email}
+              value={formData.correo}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 rounded-md bg-[#0f172a] text-white 
@@ -87,15 +127,13 @@ function Register() {
 
           {/* Contraseña */}
           <div className="w-4/5 text-center">
-            <label className="block text-sm text-gray-300 mb-1">
-              Contraseña
-            </label>
+            <label className="block text-sm text-gray-300 mb-1">Contraseña</label>
             <div className="relative w-full">
               <input
                 type={showPassword ? "text" : "password"}
-                name="password"
+                name="contraseña"
                 placeholder="********"
-                value={formData.password}
+                value={formData.contraseña}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 pr-10 rounded-md bg-[#0f172a] text-white 
@@ -114,15 +152,13 @@ function Register() {
 
           {/* Confirmar Contraseña */}
           <div className="w-4/5 text-center">
-            <label className="block text-sm text-gray-300 mb-1">
-              Confirmar Contraseña
-            </label>
+            <label className="block text-sm text-gray-300 mb-1">Confirmar Contraseña</label>
             <div className="relative w-full">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
+                name="confirmar"
                 placeholder="********"
-                value={formData.confirmPassword}
+                value={formData.confirmar}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 pr-10 rounded-md bg-[#0f172a] text-white 
@@ -139,7 +175,7 @@ function Register() {
             </div>
           </div>
 
-          {/* Botón */}
+          {/* Botón de envío */}
           <button
             type="submit"
             className="w-4/5 py-2 bg-[#FBBF24] text-black font-semibold rounded-md 
