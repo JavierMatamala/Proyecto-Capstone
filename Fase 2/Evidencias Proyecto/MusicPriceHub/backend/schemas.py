@@ -55,6 +55,12 @@ class PerfilMostrar(BaseModel):
         from_attributes = True
 UsuarioMostrar.update_forward_refs()
 
+ # ---- Usuario Login ---- 
+class UsuarioLogin(BaseModel):
+    correo: EmailStr
+    contraseña: str
+
+
 # ---- Alerta ----
 class AlertaBase(BaseModel):
     id: UUID

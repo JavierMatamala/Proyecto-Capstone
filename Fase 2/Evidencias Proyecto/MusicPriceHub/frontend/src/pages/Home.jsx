@@ -1,17 +1,33 @@
 import { useEffect, useState } from "react";
 import { getProductos } from "../services/api";
-import { Search, User, Guitar } from "lucide-react";
-import { Link } from "react-router-dom";
-
+import { Search, User, Guitar, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 function Home() {
   const [productos, setProductos] = useState([]);
   const [error, setError] = useState("");
+  const [usuario, setUsuario] = useState(null);
+  const navigate = useNavigate();
 
+  // ✅ Al cargar la página, traer productos y usuario si existe
   useEffect(() => {
     getProductos()
       .then((data) => setProductos(data))
       .catch(() => setError("No se pudo conectar con la API."));
+
+    // Leer usuario guardado del localStorage
+    const storedUser = localStorage.getItem("usuario");
+    if (storedUser) {
+      setUsuario(JSON.parse(storedUser));
+    }
   }, []);
+
+  // ✅ Cerrar sesión
+  const handleLogout = () => {
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("access_token");
+    setUsuario(null);
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-[#111827] text-white font-sans">
@@ -35,16 +51,36 @@ function Home() {
           </button>
         </div>
 
-        {/* Perfil / Login */}
-        <div className="flex items-center gap-4 mr-10">
-          <Link
-            to="/login"
-            className="text-sm bg-[#FBBF24] text-black px-4 py-2 rounded hover:bg-[#F59E0B] transition"
-          >
-            Iniciar Sesión
-          </Link>
-          <User size={28} />
-        </div>
+        {/* Perfil / Sesión */}
+<div className="flex items-center gap-4 mr-10">
+{usuario ? (
+  <div className="flex items-center gap-3">
+    <p className="text-[#FBBF24] font-semibold">
+      Hola, {usuario.nombre?.trim() || "usuario"} 👋
+    </p>
+    <button
+      onClick={() => navigate("/perfil")}
+      className="p-1 rounded-full hover:bg-[#FBBF24]/20 transition"
+      title="Ver perfil"
+    >
+      <User size={28} color="white" />
+    </button>
+    <button
+      onClick={handleLogout}
+      className="flex items-center gap-1 text-sm bg-red-500 hover:bg-red-600 px-3 py-1 rounded transition"
+    >
+      <LogOut size={16} /> Cerrar sesión
+    </button>
+  </div>
+) : (
+  <Link
+    to="/login"
+    className="text-sm bg-[#FBBF24] text-black px-4 py-2 rounded hover:bg-[#F59E0B] transition"
+  >
+    Iniciar Sesión
+  </Link>
+)}
+</div>
       </header>
 
       {/* NAV */}
@@ -53,7 +89,6 @@ function Home() {
         <button className="hover:text-[#FBBF24] transition">Accesorios</button>
         <button className="hover:text-[#FBBF24] transition">Ofertas</button>
 
-        {/* 🔗 Enlace funcional a Comunidad */}
         <Link
           to="/comunidad"
           className="hover:text-[#FBBF24] transition font-semibold"
@@ -70,9 +105,7 @@ function Home() {
           🎶 Productos disponibles
         </h2>
 
-        {error && (
-          <p className="text-red-400 text-center mb-4">{error}</p>
-        )}
+        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
 
         {productos.length === 0 ? (
           <p className="text-gray-400 text-center">

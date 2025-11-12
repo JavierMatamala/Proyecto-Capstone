@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import Usuario,Perfil
-from utils.seguridad import get_password_hash
-from schemas import UsuarioCrear, UsuarioMostrar  # 👈 import directo desde schemas.py
+from utils.seguridad import get_password_hash,verify_password, crear_token_acceso
+from schemas import UsuarioCrear, UsuarioMostrar  
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -53,7 +53,33 @@ def registrar_usuario(datos: UsuarioCrear, db: Session = Depends(get_db)):
 
     # Asociar perfil al objeto usuario para el retorno
     usuario.perfil = perfil
-    # ✅ Conversión explícita al esquema Pydantic
+    # Conversión explícita al esquema Pydantic  
     return UsuarioMostrar.from_orm(usuario)
 
 
+@router.post("/login")
+def iniciar_sesion(datos: dict, db: Session = Depends(get_db)):
+    correo = datos.get("correo")
+    contraseña = datos.get("contraseña")
+
+    # Verificar existencia del usuario
+    usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Verificar la contraseña
+    if not verify_password(contraseña, usuario.contrasena_hash):
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+
+    # Generar token JWT
+    token = crear_token_acceso({"sub": str(usuario.id)})
+
+    # Retornar datos básicos + token
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "usuario": {
+            "nombre": usuario.perfil.nombre_publico if usuario.perfil else None,
+            "correo": usuario.correo
+        }
+    }

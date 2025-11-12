@@ -38,7 +38,7 @@ function Register() {
     }
 
     try {
-      const response = await fetch("https://musicpricehub.onrender.com/auth/registro", {
+      const response = await fetch('${import.meta.env.VITE_API_URL}/auth/registro', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

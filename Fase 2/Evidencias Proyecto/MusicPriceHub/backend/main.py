@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import Base, engine
-from routers import productos, historial,alertas,scraping,auth
+from routers import productos, historial,alertas,scraping,auth,perfil
 from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
@@ -15,6 +15,7 @@ app.include_router(productos.router)
 app.include_router(historial.router)
 app.include_router(scraping.router)
 app.include_router(auth.router)
+app.include_router(perfil.router)
 
 @app.get("/")
 def inicio():
