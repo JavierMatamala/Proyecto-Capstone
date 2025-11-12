@@ -14,7 +14,7 @@ function PerfilInfo() {
       return;
     }
 
-    fetch("http://127.0.0.1:8000/perfil/me", {
+    fetch("https://musicpricehub.onrender.com/perfil/me", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

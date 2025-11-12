@@ -21,7 +21,7 @@ function Perfil() {
       return;
     }
 
-    fetch("https://musicpricehub-api.onrender.com/perfil/me", {
+    fetch("https://musicpricehub.onrender.com/perfil/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())

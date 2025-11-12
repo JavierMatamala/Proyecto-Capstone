@@ -16,7 +16,7 @@ app = FastAPI(
 # 🔹 Configurar CORS ANTES de los routers
 origins = [
     "http://localhost:5173",                    # React local
-    "https://musicpricehub.onrender.com",  # Frontend en Render
+    "https://musicpricehub-site.onrender.com",  
 ]
 
 app.add_middleware(
