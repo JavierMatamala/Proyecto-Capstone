@@ -21,7 +21,7 @@ function Perfil() {
       return;
     }
 
-    fetch('${import.meta.env.VITE_API_URL}/perfil/me', {
+    fetch("https://musicpricehub-api.onrender.com/perfil/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -32,7 +32,7 @@ function Perfil() {
   // ✅ Guardar cambios
   const handleGuardar = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch('${import.meta.env.VITE_API_URL}/perfil/actualizar', {
+    const response = await fetch("https://musicpricehub-api.onrender.com/perfil/actualizar", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -61,7 +61,7 @@ function Perfil() {
   // ✅ Cambiar contraseña
   const handleCambiarContrasena = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch('${import.meta.env.VITE_API_URL}/cambiar_contrasena', {
+    const response = await fetch("https://musicpricehub-api.onrender.com/perfil/cambiar_contrasena", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
