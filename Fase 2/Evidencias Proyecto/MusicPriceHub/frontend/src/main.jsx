@@ -5,8 +5,10 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Comunidad from "./pages/Comunidad";
-import Perfil from "./pages/Perfil";          // ← formulario editar perfil
-import PerfilInfo from "./pages/PerfilInfo";  // ← vista principal del perfil
+
+import TemaDetalle from "./pages/TemaDetalle";   // ← ⬅ IMPORTANTE
+import Perfil from "./pages/Perfil";
+import PerfilInfo from "./pages/PerfilInfo";
 import PrivateRoute from "./components/PrivateRoute";
 import "./index.css";
 
@@ -14,9 +16,14 @@ const router = createBrowserRouter([
   { path: "/", element: <Home /> },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
+
+  // LISTA DE TEMAS
   { path: "/comunidad", element: <Comunidad /> },
 
-  // 🧩 Perfil (Vista principal)
+  // DETALLE DE TEMA DEL FORO  ← ⬅ ESTA RUTA SE NECESITABA
+  { path: "/comunidad/temas/:id", element: <TemaDetalle /> },
+
+  // PERFIL (vista pública del usuario conectado)
   {
     path: "/perfil",
     element: (
@@ -26,7 +33,7 @@ const router = createBrowserRouter([
     ),
   },
 
-  // 🧩 Edición de perfil
+  // EDITAR PERFIL
   {
     path: "/perfil/editar",
     element: (

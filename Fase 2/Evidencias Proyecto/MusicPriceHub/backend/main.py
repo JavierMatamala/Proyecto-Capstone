@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import Base, engine
-from routers import productos, historial, alertas, scraping, auth, perfil
+from routers import productos, historial, alertas, scraping, auth, perfil,comunidad
 from fastapi.middleware.cors import CORSMiddleware
 
 # Crear tablas
@@ -16,7 +16,8 @@ app = FastAPI(
 # 🔹 Configurar CORS ANTES de los routers
 origins = [
     "http://localhost:5173",                    # React local
-    "https://musicpricehub-site.onrender.com",  
+    "https://musicpricehub-site.onrender.com",
+    "http://127.0.0.1:5173",  
 ]
 
 app.add_middleware(
@@ -34,7 +35,13 @@ app.include_router(scraping.router)
 app.include_router(alertas.router)
 app.include_router(auth.router)
 app.include_router(perfil.router)
-
+app.include_router(productos.router)
+app.include_router(historial.router)
+app.include_router(scraping.router)
+app.include_router(alertas.router)
+app.include_router(auth.router)
+app.include_router(perfil.router)
+app.include_router(comunidad.router)
 # 🔹 Ruta raíz
 @app.get("/")
 def inicio():

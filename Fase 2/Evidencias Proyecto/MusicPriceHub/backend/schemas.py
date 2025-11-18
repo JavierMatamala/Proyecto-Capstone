@@ -114,3 +114,116 @@ class AlertaBase(BaseModel):
 
     class Config:
         from_attributes = True
+# ============================
+# SCHEMAS COMUNIDAD 
+# ============================
+
+# Categorías
+class CategoriaForoCrear(BaseModel):
+    nombre: str
+    descripcion: Optional[str] = None
+
+class CategoriaForoMostrar(BaseModel):
+    id: UUID
+    nombre: str
+    descripcion: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# Temas
+class TemaForoCrear(BaseModel):
+    titulo: str
+    categoria_id: Optional[UUID] = None
+
+class TemaForoActualizar(BaseModel):
+    titulo: Optional[str] = None
+    categoria_id: Optional[UUID] = None
+    fijado: Optional[bool] = None
+    cerrado: Optional[bool] = None
+
+class TemaForoMostrar(BaseModel):
+    id: UUID
+    titulo: str
+    categoria_id: Optional[UUID]
+    creado_por: UUID
+    creado_en: datetime
+    actualizado_en: datetime
+    fijado: bool
+    cerrado: bool
+
+    class Config:
+        from_attributes = True
+
+
+# Mensajes
+class MensajeForoCrear(BaseModel):
+    contenido: str
+    respuesta_a_id: Optional[UUID] = None  # para responder a otro mensaje
+
+class MensajeForoActualizar(BaseModel):
+    contenido: str
+
+class MensajeForoMostrar(BaseModel):
+    id: UUID
+    tema_id: UUID
+    usuario_id: UUID
+    contenido: str
+    creado_en: datetime
+    actualizado_en: datetime
+    respuesta_a_id: Optional[UUID]
+    editado: bool
+    eliminado: bool
+
+    class Config:
+        from_attributes = True
+
+
+# Likes
+class LikeMensajeMostrar(BaseModel):
+    id: UUID
+    mensaje_id: UUID
+    usuario_id: UUID
+    creado_en: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Reportes
+class ReporteMensajeCrear(BaseModel):
+    motivo: str
+
+class ReporteMensajeMostrar(BaseModel):
+    id: UUID
+    mensaje_id: UUID
+    usuario_id: UUID
+    motivo: str
+    estado: str
+    creado_en: datetime
+    resuelto_en: Optional[datetime]
+    resuelto_por: Optional[UUID]
+
+    class Config:
+        from_attributes = True
+
+# ======================
+# SCHEMA MENSAJE EN ÁRBOL
+# ======================
+
+class MensajeForoArbol(BaseModel):
+    id: UUID
+    usuario_id: UUID
+    contenido: str
+    creado_en: datetime
+    actualizado_en: datetime
+    editado: bool
+    eliminado: bool
+    respuesta_a_id: UUID | None
+    respuestas: list["MensajeForoArbol"] = []
+
+    class Config:
+        from_attributes = True
+
+MensajeForoArbol.update_forward_refs()

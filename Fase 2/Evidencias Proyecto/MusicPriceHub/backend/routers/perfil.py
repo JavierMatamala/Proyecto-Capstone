@@ -60,11 +60,6 @@ def obtener_perfil(Authorization: str = Header(None), db: Session = Depends(get_
         "pais": perfil.pais,
         "ciudad": perfil.ciudad,
     }
-
-# -------------------------
-# 2️⃣ Actualizar datos del perfil (nombre, país, ciudad)
-# -------------------------
-# -------------------------
 # 2️⃣ Actualizar datos del perfil
 # -------------------------
 @router.put("/actualizar")
