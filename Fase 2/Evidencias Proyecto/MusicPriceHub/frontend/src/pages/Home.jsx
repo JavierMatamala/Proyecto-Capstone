@@ -95,7 +95,12 @@ function Home() {
         >
           Comunidad
         </Link>
-
+        <Link
+          to="/marketplace"
+          className="hover:text-[#FBBF24] transition font-semibold"
+        >
+          Marketplace
+        </Link>
         <button className="hover:text-[#FBBF24] transition">Marketplace</button>
       </nav>
 
@@ -138,3 +143,4 @@ function Home() {
 }
 
 export default Home;
+

@@ -24,6 +24,11 @@ class Usuario(Base):
     # 🔗 Relaciones
     perfil = relationship("Perfil", back_populates="usuario", uselist=False)
     alertas_precio = relationship("AlertaPrecio", back_populates="usuario", cascade="all, delete-orphan")
+    publicaciones_mercado = relationship(
+        "PublicacionMercado",
+        back_populates="vendedor",
+        cascade="all, delete-orphan"
+    )
 
 
 # ============================
@@ -41,7 +46,6 @@ class Perfil(Base):
     creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
     actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
 
-    # 🔗 Relación inversa hacia Usuario
     usuario = relationship("Usuario", back_populates="perfil")
 
 
@@ -58,8 +62,30 @@ class Producto(Base):
     modelo = Column(String)
 
     ofertas = relationship("OfertaActual", back_populates="producto")
-    historial = relationship("HistorialPrecio", back_populates="producto")
     alertas_precio = relationship("AlertaPrecio", back_populates="producto")
+    tiendas_producto = relationship("TiendaProducto", back_populates="producto")
+
+
+# ============================
+# 🔹 MODELO: TIENDA_PRODUCTO
+# ============================
+class TiendaProducto(Base):
+    __tablename__ = "tienda_productos"
+    __table_args__ = {"schema": "catalogo"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tienda_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.tiendas.id"), nullable=False)
+    producto_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.productos.id"), nullable=False)
+
+    sku_tienda = Column(String, nullable=True)
+    url_producto = Column(String, nullable=False)
+    activo = Column(Boolean, default=True)
+
+    creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
+    actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    tienda = relationship("Tienda", back_populates="productos_tienda")
+    producto = relationship("Producto", back_populates="tiendas_producto")
 
 
 # ============================
@@ -73,8 +99,10 @@ class Tienda(Base):
     nombre = Column(String, nullable=False)
     url = Column(String)
     sitio_web = Column(String) 
+
     ofertas = relationship("OfertaActual", back_populates="tienda")
     tareas_scraping = relationship("TareaScraping", back_populates="tienda")
+    productos_tienda = relationship("TiendaProducto", back_populates="tienda")
 
 
 # ============================
@@ -107,11 +135,13 @@ class HistorialPrecio(Base):
     __table_args__ = {"schema": "precios"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    producto_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.productos.id"))
-    precio = Column(Float)
-    fecha = Column(DateTime)
-
-    producto = relationship("Producto", back_populates="historial")
+    tienda_producto_id = Column(UUID(as_uuid=True), nullable=False)
+    precio_centavos = Column(Integer, nullable=False)
+    moneda = Column(String, default="CLP")
+    disponibilidad = Column(String)
+    valido_desde = Column(DateTime(timezone=True))
+    fuente = Column(String)
+    fecha_scraping = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
 # ============================
@@ -132,8 +162,9 @@ class AlertaPrecio(Base):
     usuario = relationship("Usuario", back_populates="alertas_precio")
     producto = relationship("Producto", back_populates="alertas_precio")
 
+
 # ============================
-# MODELOS DE COMUNIDAD
+# 🔹 COMUNIDAD — CATEGORÍAS
 # ============================
 class CategoriaForo(Base):
     __tablename__ = "categorias_foro"
@@ -146,7 +177,6 @@ class CategoriaForo(Base):
     temas = relationship("TemaForo", back_populates="categoria", cascade="all, delete-orphan")
 
 
-# Temas del foro (hilos de conversación)
 class TemaForo(Base):
     __tablename__ = "temas_foro"
     __table_args__ = {"schema": "comunidad"}
@@ -157,14 +187,14 @@ class TemaForo(Base):
     creado_por = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=False)
     creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
     actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
-    fijado = Column(Boolean, default=False)   # tema destacado
-    cerrado = Column(Boolean, default=False)  # no se pueden agregar más mensajes
+    fijado = Column(Boolean, default=False)
+    cerrado = Column(Boolean, default=False)
 
     categoria = relationship("CategoriaForo", back_populates="temas")
     creador = relationship("Usuario")
     mensajes = relationship("MensajeForo", back_populates="tema", cascade="all, delete-orphan")
 
-# Mensajes dentro de un tema
+
 class MensajeForo(Base):
     __tablename__ = "mensajes_foro"
     __table_args__ = {"schema": "comunidad"}
@@ -177,7 +207,7 @@ class MensajeForo(Base):
     actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
     respuesta_a_id = Column(UUID(as_uuid=True), ForeignKey("comunidad.mensajes_foro.id"), nullable=True)
     editado = Column(Boolean, default=False)
-    eliminado = Column(Boolean, default=False)  # borrado lógico
+    eliminado = Column(Boolean, default=False)
 
     tema = relationship("TemaForo", back_populates="mensajes")
     usuario = relationship("Usuario")
@@ -185,7 +215,7 @@ class MensajeForo(Base):
     likes = relationship("LikeMensajeForo", back_populates="mensaje", cascade="all, delete-orphan")
     reportes = relationship("ReporteMensajeForo", back_populates="mensaje", cascade="all, delete-orphan")
 
-# Likes en mensajes
+
 class LikeMensajeForo(Base):
     __tablename__ = "likes_mensajes_foro"
     __table_args__ = {"schema": "comunidad"}
@@ -197,7 +227,8 @@ class LikeMensajeForo(Base):
 
     mensaje = relationship("MensajeForo", back_populates="likes")
     usuario = relationship("Usuario")
-# Reportes de mensajes (para moderación)
+
+
 class ReporteMensajeForo(Base):
     __tablename__ = "reportes_mensajes_foro"
     __table_args__ = {"schema": "comunidad"}
@@ -206,7 +237,7 @@ class ReporteMensajeForo(Base):
     mensaje_id = Column(UUID(as_uuid=True), ForeignKey("comunidad.mensajes_foro.id"), nullable=False)
     usuario_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=False)
     motivo = Column(Text, nullable=False)
-    estado = Column(String, default="pendiente")  # pendiente, revisado, descartado
+    estado = Column(String, default="pendiente")
     creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
     resuelto_en = Column(DateTime(timezone=True), nullable=True)
     resuelto_por = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=True)
@@ -215,28 +246,23 @@ class ReporteMensajeForo(Base):
     usuario = relationship("Usuario", foreign_keys=[usuario_id])
     moderador = relationship("Usuario", foreign_keys=[resuelto_por])
 
-    
+
+# ============================
+# 🔹 SCRAPING
+# ============================
 class TareaScraping(Base):
     __tablename__ = "tareas_scraping"
     __table_args__ = {"schema": "operaciones"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tienda_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("catalogo.tiendas.id"),
-        nullable=False,
-    )
+    tienda_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.tiendas.id"), nullable=False)
     inicio_en = Column(DateTime(timezone=True), server_default=func.now())
     fin_en = Column(DateTime(timezone=True))
-    estado = Column(String, nullable=False, default="pendiente")  # pendiente / ok / error
+    estado = Column(String, nullable=False, default="pendiente")
     detalle = Column(Text)
 
     tienda = relationship("Tienda", back_populates="tareas_scraping")
-    resultados = relationship(
-        "ResultadoScraping",
-        back_populates="tarea",
-        cascade="all, delete-orphan",
-    )
+    resultados = relationship("ResultadoScraping", back_populates="tarea", cascade="all, delete-orphan")
 
 
 class ResultadoScraping(Base):
@@ -244,14 +270,79 @@ class ResultadoScraping(Base):
     __table_args__ = {"schema": "operaciones"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tarea_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("operaciones.tareas_scraping.id"),
-        nullable=False,
-    )
+    tarea_id = Column(UUID(as_uuid=True), ForeignKey("operaciones.tareas_scraping.id"), nullable=False)
     url_producto = Column(Text, nullable=False)
-    datos_extraidos = Column(JSONB, nullable=False)  # nombre, descripcion, precio, imagen, url
+    datos_extraidos = Column(JSONB, nullable=False)
     obtenido_en = Column(DateTime(timezone=True), server_default=func.now())
-    estado = Column(String, nullable=False, default="ok")  # ok / error
+    estado = Column(String, nullable=False, default="ok")
 
     tarea = relationship("TareaScraping", back_populates="resultados")
+
+
+# ============================
+# 🔹 PUBLICACIÓN MERCADO
+# ============================
+class PublicacionMercado(Base):
+    __tablename__ = "publicaciones"
+    __table_args__ = {"schema": "mercado"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendedor_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=False)
+    titulo = Column(Text, nullable=False)
+    descripcion = Column(Text, nullable=True)
+    producto_id = Column(UUID(as_uuid=True), ForeignKey("catalogo.productos.id"), nullable=True)
+    precio_centavos = Column(Integer, nullable=False)
+    moneda = Column(String, nullable=False, default="CLP")
+    estado = Column(String, nullable=False, default="activa")
+    ciudad = Column(String, nullable=True)
+    creada_en = Column(DateTime(timezone=True), server_default=func.now())
+    actualizada_en = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    vendedor = relationship("Usuario", back_populates="publicaciones_mercado")
+    imagenes = relationship("ImagenPublicacion", back_populates="publicacion", cascade="all, delete-orphan")
+
+
+class ImagenPublicacion(Base):
+    __tablename__ = "imagenes_publicacion"
+    __table_args__ = {"schema": "mercado"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    publicacion_id = Column(UUID(as_uuid=True), ForeignKey("mercado.publicaciones.id"), nullable=False)
+    url_imagen = Column(Text, nullable=False)
+    orden = Column(Integer, nullable=False, default=0)
+
+    publicacion = relationship("PublicacionMercado", back_populates="imagenes")
+
+
+# ============================
+# 🔹 CONVERSACION (FINAL)
+# ============================
+class Conversacion(Base):
+    __tablename__ = "conversaciones"
+    __table_args__ = {"schema": "mercado"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    usuario1_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=False)
+    usuario2_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=False)
+    publicacion_id = Column(UUID(as_uuid=True), ForeignKey("mercado.publicaciones.id"), nullable=False)
+    creada_en = Column(DateTime(timezone=True), server_default=func.now())
+
+    mensajes = relationship("Mensaje", back_populates="conversacion", cascade="all, delete-orphan")
+
+
+# ============================
+# 🔹 MENSAJE
+# ============================
+class Mensaje(Base):
+    __tablename__ = "mensajes"
+    __table_args__ = {"schema": "mercado"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    conversacion_id = Column(UUID(as_uuid=True), ForeignKey("mercado.conversaciones.id", ondelete="CASCADE"), nullable=False)
+    remitente_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=False)
+    receptor_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), nullable=False)
+    contenido = Column(Text, nullable=False)
+    enviado_en = Column(DateTime(timezone=True), server_default=func.now())
+    leido = Column(Boolean, default=False)
+
+    conversacion = relationship("Conversacion", back_populates="mensajes")

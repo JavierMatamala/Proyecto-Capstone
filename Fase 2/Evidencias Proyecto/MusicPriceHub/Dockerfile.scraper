@@ -1,0 +1,27 @@
+FROM python:3.11-slim
+
+# Dentro del contenedor vamos a trabajar en /backend
+WORKDIR /backend
+
+# Dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements del backend
+
+COPY backend/requirements.txt /app/requirements.txt
+
+
+RUN pip install --no-cache-dir -r /app/requirements.txt \
+    && playwright install --with-deps chromium
+
+# Copiar TODO el contenido de la carpeta backend
+COPY backend/ .
+
+# Por si acaso, aseguramos que scraper sea un paquete
+RUN touch scraper/__init__.py
+
+# Ejecutamos el worker como MÓDULO desde /backend
+CMD ["python", "-m", "scraper.worker"]

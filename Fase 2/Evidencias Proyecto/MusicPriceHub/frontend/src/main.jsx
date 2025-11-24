@@ -5,25 +5,23 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Comunidad from "./pages/Comunidad";
-
-import TemaDetalle from "./pages/TemaDetalle";   // ← ⬅ IMPORTANTE
+import TemaDetalle from "./pages/TemaDetalle";
 import Perfil from "./pages/Perfil";
 import PerfilInfo from "./pages/PerfilInfo";
 import PrivateRoute from "./components/PrivateRoute";
 import "./index.css";
+import Marketplace from "./pages/Marketplace";
+import CrearPublicacion from "./pages/CrearPublicacion";
+import PublicacionDetalle from "./pages/PublicacionDetalle";   // ⬅ IMPORTANTE
 
 const router = createBrowserRouter([
   { path: "/", element: <Home /> },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
 
-  // LISTA DE TEMAS
   { path: "/comunidad", element: <Comunidad /> },
-
-  // DETALLE DE TEMA DEL FORO  ← ⬅ ESTA RUTA SE NECESITABA
   { path: "/comunidad/temas/:id", element: <TemaDetalle /> },
 
-  // PERFIL (vista pública del usuario conectado)
   {
     path: "/perfil",
     element: (
@@ -33,7 +31,6 @@ const router = createBrowserRouter([
     ),
   },
 
-  // EDITAR PERFIL
   {
     path: "/perfil/editar",
     element: (
@@ -41,6 +38,23 @@ const router = createBrowserRouter([
         <Perfil />
       </PrivateRoute>
     ),
+  },
+
+  { path: "/marketplace", element: <Marketplace /> },
+
+  {
+    path: "/marketplace/publicar",
+    element: (
+      <PrivateRoute>
+        <CrearPublicacion />
+      </PrivateRoute>
+    ),
+  },
+
+  // ⭐ NUEVA RUTA PARA EL DETALLE DE LA PUBLICACIÓN
+  {
+    path: "/marketplace/publicacion/:id",
+    element: <PublicacionDetalle />,
   },
 ]);
 

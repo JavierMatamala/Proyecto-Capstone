@@ -13,7 +13,7 @@ import {
   Send,
 } from "lucide-react";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "https://musicpricehub.onrender.com";
 
 /* ------------------------------ TIME AGO -------------------------------- */
 function timeAgo(dateString) {

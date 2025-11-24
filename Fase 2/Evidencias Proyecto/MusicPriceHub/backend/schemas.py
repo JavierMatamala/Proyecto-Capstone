@@ -1,8 +1,7 @@
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, EmailStr, constr, UUID4
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
-
 # ---- Clase base (común) ----
 class ProductoBase(BaseModel):
     nombre: str
@@ -227,3 +226,188 @@ class MensajeForoArbol(BaseModel):
         from_attributes = True
 
 MensajeForoArbol.update_forward_refs()
+
+
+# ============================
+# 🔹 MERCADO: IMÁGENES
+# ============================
+class ImagenPublicacionBase(BaseModel):
+    url_imagen: str
+    orden: Optional[int] = 0
+
+
+class ImagenPublicacionCrear(ImagenPublicacionBase):
+    pass
+
+
+class ImagenPublicacionMostrar(ImagenPublicacionBase):
+    id: UUID
+
+    class Config:
+        from_attributes = True
+
+
+# ============================
+# 🔹 MERCADO: DATOS VENDEDOR
+# ============================
+class DatosVendedor(BaseModel):
+    id: UUID
+    correo: EmailStr
+    nombre_publico: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+# ============================
+# 🔹 MERCADO: PUBLICACIONES
+# ============================
+class PublicacionMercadoBase(BaseModel):
+    titulo: str
+    descripcion: Optional[str] = None
+    producto_id: Optional[UUID] = None
+    precio_centavos: int
+    moneda: str = "CLP"
+    ciudad: Optional[str] = None
+
+
+class PublicacionMercadoCrear(PublicacionMercadoBase):
+    imagenes: List[ImagenPublicacionCrear] = []
+
+
+class PublicacionMercadoMostrar(PublicacionMercadoBase):
+    id: UUID
+    estado: str
+    creada_en: datetime
+    actualizada_en: datetime
+    vendedor: DatosVendedor
+    imagenes: List[ImagenPublicacionMostrar]
+
+    class Config:
+        from_attributes = True
+
+
+class PublicacionMercadoListado(BaseModel):
+    id: UUID
+    titulo: str
+    precio_centavos: int
+    moneda: str
+    ciudad: Optional[str]
+    imagen_principal: Optional[str]
+    vendedor_nombre: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+# ============================
+# 🔹 MERCADO: IMÁGENES PUBLICACIÓN
+# ============================
+class ImagenPublicacionMostrar(BaseModel):
+    id: UUID
+    url_imagen: str
+    orden: int
+
+    class Config:
+        from_attributes = True
+# ============================
+# 🔹 MERCADO: CONVERSACION CREAR
+# ============================
+
+class ConversacionCrear(BaseModel):
+    usuario1_id: UUID
+    usuario2_id: UUID
+    publicacion_id: UUID
+# ============================
+# 🔹 MERCADO: CONVERSACION OUT
+# ============================
+class ConversacionOut(BaseModel):
+    id: UUID
+    usuario1_id: UUID
+    usuario2_id: UUID
+    publicacion_id: UUID
+    creada_en: datetime
+
+    class Config:
+        orm_mode = True
+# ============================
+#  SCHEMA: MENSAJE CREAR
+# ============================
+class MensajeCrear(BaseModel):
+    conversacion_id: UUID
+    remitente_id: UUID
+    receptor_id: UUID
+    contenido: str
+# ============================
+# 🔹 MERCADO: MENSAJE OUT
+# ============================
+class MensajeOut(BaseModel):
+    id: UUID
+    conversacion_id: UUID
+    remitente_id: UUID
+    receptor_id: UUID
+    contenido: str
+    enviado_en: datetime
+    leido: bool
+
+    class Config:
+        orm_mode = True
+
+class ConversacionItem(BaseModel):
+    id: UUID
+    publicacion_id: UUID
+    otro_usuario_id: UUID
+    ultimo_mensaje: str | None
+    enviado_en: datetime | None
+    no_leidos: int
+
+    class Config:
+        orm_mode = True
+
+# =============================
+#  SCHEMAS PARA CHAT (mercado)
+# =============================
+
+class MensajeResponse(BaseModel):
+    id: UUID4
+    remitente_id: UUID4
+    receptor_id: UUID4
+    contenido: str
+    enviado_en: datetime
+    leido: bool
+
+    class Config:
+        orm_mode = True
+
+
+class ConversacionResponse(BaseModel):
+    id: UUID4
+    usuario1_id: UUID4
+    usuario2_id: UUID4
+    publicacion_id: UUID4
+    creada_en: datetime
+    mensajes: list[MensajeResponse] = []
+
+    class Config:
+        orm_mode = True
+
+class MensajeResponse(BaseModel):
+    id: str
+    remitente_id: str
+    receptor_id: str
+    contenido: str
+    enviado_en: datetime
+    leido: bool
+
+    class Config:
+        orm_mode = True
+
+
+class UltimoMensajeResponse(BaseModel):
+    contenido: str
+    enviado_en: datetime
+    remitente_id: str
+
+class ConversacionListaResponse(BaseModel):
+    id: str
+    publicacion_id: str
+    otro_usuario_id: str
+    otro_usuario_nombre: str
+    ultimo_mensaje: Optional[UltimoMensajeResponse] = None
