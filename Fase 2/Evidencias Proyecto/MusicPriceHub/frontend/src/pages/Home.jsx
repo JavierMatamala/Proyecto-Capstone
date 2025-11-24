@@ -117,25 +117,34 @@ function Home() {
             No hay productos registrados por el momento.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {productos.map((p) => (
-              <div
-                key={p.id}
-                className="bg-[#1F2937] rounded-xl p-4 hover:scale-105 hover:shadow-lg transition"
-              >
-                <img
-                  src={`https://via.placeholder.com/200x150?text=${encodeURIComponent(p.nombre)}`}
-                  alt={p.nombre}
-                  className="rounded-md mb-4"
-                />
-                <h3 className="text-xl font-semibold">{p.nombre}</h3>
-                <p className="text-gray-300">${p.precio}</p>
-                <button className="mt-3 bg-[#6D28D9] hover:bg-[#5B21B6] text-white w-full py-2 rounded transition">
-                  Ver Detalles
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {productos.map((p) => (
+                  <div
+                    key={p.id}
+                    className="bg-[#1F2937] rounded-xl p-4 hover:scale-105 hover:shadow-lg transition"
+                  >
+                    <img 
+                    src={p.imagen_url || `https://placehold.co/200x150?text=${encodeURIComponent(p.nombre)}`} 
+                    alt={p.nombre}
+/>
+
+                    <h3 className="text-xl font-semibold mt-2">{p.nombre}</h3>
+
+                    {/* Mostrar el precio del producto */}
+                    {p.ofertas && p.ofertas.length > 0 ? (
+                      <p className="text-gray-300 font-bold text-lg">
+                        ${p.ofertas[0].precio_centavos.toLocaleString("es-CL")}
+                      </p>
+                    ) : (
+                      <p className="text-gray-300">$ —</p>
+                    )}
+
+                    <button className="mt-3 bg-[#6D28D9] hover:bg-[#5B21B6] text-white w-full py-2 rounded transition">
+                      Ver Detalles
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
         )}
       </main>
     </div>

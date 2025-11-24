@@ -60,7 +60,8 @@ class Producto(Base):
     nombre = Column(String, nullable=False)
     marca = Column(String)
     modelo = Column(String)
-
+    imagen_url = Column(String, nullable=True)
+    
     ofertas = relationship("OfertaActual", back_populates="producto")
     alertas_precio = relationship("AlertaPrecio", back_populates="producto")
     tiendas_producto = relationship("TiendaProducto", back_populates="producto")

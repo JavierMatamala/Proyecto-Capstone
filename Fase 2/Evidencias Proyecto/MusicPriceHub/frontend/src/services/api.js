@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // 🌍 URL del backend en Render
-const API_URL = "https://musicpricehub.onrender.com";
+const API_URL = "http://127.0.0.1:8000";
 
 
 // Instancia base de Axios
@@ -13,7 +13,7 @@ export const api = axios.create({
 
 // Obtener todos los productos
 export async function getProductos() {
-  const response = await fetch("https://musicpricehub.onrender.com/api/productos/");
+  const response = await fetch(`${API_URL}/api/productos/`);
   if (!response.ok) {
     throw new Error("Error en la API");
   }

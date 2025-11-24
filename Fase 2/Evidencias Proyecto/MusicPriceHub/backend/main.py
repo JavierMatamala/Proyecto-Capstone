@@ -4,8 +4,6 @@ from routers import productos, historial, alertas, scraping, auth, perfil, comun
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
-
-# Nuevos imports CORRECTOS
 from routers.chat import router as chat_router
 from routers.chat_ws import router as chat_ws_router
 
@@ -22,18 +20,21 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 
 origins = [
     "http://localhost:5173",
-    "https://musicpricehub.onrender.com",
+    "https://musicpricehub-site.onrender.com",
     "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://musicpricehub-site.onrender.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.include_router(productos.router)
 app.include_router(historial.router)
 app.include_router(scraping.router)

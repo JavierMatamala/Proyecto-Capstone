@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, constr, UUID4
+from pydantic import BaseModel, EmailStr, constr, UUID4,Field
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
@@ -15,16 +15,21 @@ class ProductoCrear(ProductoBase):
 # ---- Para mostrar producto (con ID y ofertas) ----
 class OfertaBase(BaseModel):
     id: UUID
-    precio: float
-    fecha_actualizacion: Optional[datetime]
+    precio: int = Field(..., alias="precio_centavos")
+    moneda: str
+    disponibilidad: Optional[str] = None
+    fecha_actualizacion: datetime = Field(..., alias="fecha_scraping")
     tienda_id: UUID
+
     class Config:
-        orm_mode = True
+        from_attributes = True
+        populate_by_name = True
 
 class ProductoMostrar(ProductoBase):
     id: UUID
     ofertas: Optional[List[OfertaBase]] = []
-
+    imagen_url: Optional[str] = None
+        
     class Config:
         orm_mode = True
 
@@ -66,15 +71,6 @@ class AlertaBase(BaseModel):
     precio_objetivo: float
     fecha_creacion: Optional[datetime]
     usuario: Optional[UsuarioMostrar]
-    class Config:
-        from_attributes = True
-
-# ---- Oferta ----
-class OfertaBase(BaseModel):
-    id: UUID
-    precio: float
-    fecha_actualizacion: Optional[datetime]
-    tienda_id: UUID
     class Config:
         from_attributes = True
 
