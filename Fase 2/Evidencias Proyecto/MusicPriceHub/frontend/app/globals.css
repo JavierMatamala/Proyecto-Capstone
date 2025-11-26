@@ -1,0 +1,120 @@
+/* Carga Tailwind v4 */
+@import "tailwindcss";
+
+/* ==========================================================
+      PALETA BASADA EN TU LOGO (Modo Claro/Oscuro)
+   ========================================================== */
+
+/* Modo oscuro por defecto */
+:root {
+  --bg-dark: #050718;
+  --fg-dark: #e5e7eb;
+  --header-dark: #111827;
+  --card-dark: #020617;
+  --accent-dark: #22d3ee;
+  --accent-soft-dark: #38bdf8;
+
+  --bg-light: #f9fafb;
+  --fg-light: #0f172a;
+  --header-light: #0b1120;
+  --card-light: #e5e7eb;
+  --accent-light: #0891b2;
+  --accent-soft-light: #22d3ee;
+
+  /* Estado inicial (dark) */
+  --bg-page: var(--bg-dark);
+  --fg-page: var(--fg-dark);
+  --header-bg: var(--header-dark);
+  --card-bg: var(--card-dark);
+  --accent: var(--accent-dark);
+  --accent-soft: var(--accent-soft-dark);
+}
+
+/* Modo claro */
+:root[data-theme="light"] {
+  --bg-page: var(--bg-light);
+  --fg-page: var(--fg-light);
+  --header-bg: var(--header-light);
+  --card-bg: var(--card-light);
+  --accent: var(--accent-light);
+  --accent-soft: var(--accent-soft-light);
+}
+
+/* Modo oscuro explícito */
+:root[data-theme="dark"] {
+  --bg-page: var(--bg-dark);
+  --fg-page: var(--fg-dark);
+  --header-bg: var(--header-dark);
+  --card-bg: var(--card-dark);
+  --accent: var(--accent-dark);
+  --accent-soft: var(--accent-soft-dark);
+}
+
+/* ==========================================================
+      CLASES DINÁMICAS (REEMPLAZA @theme inline)
+   ========================================================== */
+
+/* Texto principal */
+.text-page {
+  color: var(--fg-page) !important;
+}
+
+/* Fondo principal */
+.bg-page {
+  background-color: var(--bg-page) !important;
+}
+
+/* Texto secundario */
+.text-page-soft {
+  color: color-mix(in srgb, var(--fg-page) 60%, transparent) !important;
+}
+
+/* Fondos suaves */
+.bg-page-soft {
+  background-color: color-mix(in srgb, var(--bg-page) 92%, white) !important;
+}
+
+/* Bordes universales */
+.border-page {
+  border-color: var(--fg-page) !important;
+}
+
+/* Colores de marca */
+.text-brand-accent {
+  color: var(--accent) !important;
+}
+.bg-brand-accent {
+  background-color: var(--accent) !important;
+}
+.text-brand-accent-soft {
+  color: var(--accent-soft) !important;
+}
+.bg-brand-accent-soft {
+  background-color: var(--accent-soft) !important;
+}
+
+/* Header */
+.bg-brand-header {
+  background-color: var(--header-bg) !important;
+}
+
+/* Tarjetas */
+.bg-brand-card {
+  background-color: var(--card-bg) !important;
+}
+
+/* ==========================================================
+      ESTILOS BASE
+   ========================================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--fg-page);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  
+}
+
