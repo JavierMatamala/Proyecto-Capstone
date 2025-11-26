@@ -18,6 +18,12 @@ export default function RegisterPage() {
 
   const [error, setError] = useState("");
 
+const [formData, setFormData] = useState({
+  nombre: "",
+  correo: "",
+  contraseña: "",
+});
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setError("");
@@ -28,18 +34,17 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch(
-        "https://musicpricehub.onrender.com/auth/register",
-        {
+      const response = await fetch("https://musicpricehub.onrender.com/auth/registro", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
-            nombre,
-            correo,
-            contraseña: contrasena,
-          }),
-        }
-      );
+            nombre: formData.nombre,
+            correo: formData.correo,
+            contraseña: formData.contraseña
+          })
+});
 
       if (!response.ok) {
         throw new Error("Error al registrar.");

@@ -18,7 +18,7 @@ export default function Home() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("https://musicpricehub.onrender.com/productos")
+    fetch("http://localhost:8000/api/productos/")
       .then((res) => res.json())
       .then((data) => setProductos(data))
       .catch(() => setError("No se pudo conectar con la API."));

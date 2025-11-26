@@ -18,19 +18,19 @@ app = FastAPI(
 os.makedirs("media", exist_ok=True)
 app.mount("/media", StaticFiles(directory="media"), name="media")
 
+
+
 origins = [
-    "http://localhost:5173",
-    "https://musicpricehub-site.onrender.com",
-    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://127.0.0.1:3000",
+    "https://musicpricehub.onrender.com",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://musicpricehub-site.onrender.com",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
