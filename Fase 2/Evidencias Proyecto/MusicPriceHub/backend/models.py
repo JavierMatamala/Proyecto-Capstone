@@ -40,8 +40,10 @@ class Perfil(Base):
 
     usuario_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), primary_key=True)
     nombre_publico = Column(String, nullable=False)
-    region = Column(String)       # ← CAMBIO AQUÍ
-    comuna = Column(String)       # ← CAMBIO AQUÍ
+
+    # 🔥 NUEVOS CAMPOS
+    region = Column(String)
+    comuna = Column(String)
     avatar_url = Column(String)
 
     creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)

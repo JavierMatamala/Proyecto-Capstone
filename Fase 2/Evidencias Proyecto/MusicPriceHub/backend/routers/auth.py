@@ -43,8 +43,8 @@ def registrar_usuario(datos: UsuarioCrear, db: Session = Depends(get_db)):
     perfil = Perfil(
         usuario_id=usuario.id,
         nombre_publico=datos.nombre,
-        pais=None,
-        ciudad=None,
+        region=None,
+        comuna=None,
         avatar_url=None
     )
     db.add(perfil)

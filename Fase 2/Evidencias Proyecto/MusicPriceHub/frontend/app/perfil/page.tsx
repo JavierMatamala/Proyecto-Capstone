@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+const API_URL = "https://musicpricehub.onrender.com";
 // =========================
 //  DATOS REGIONES Y COMUNAS
 // =========================
@@ -58,7 +58,7 @@ export default function PerfilPage() {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
-    fetch("https://musicpricehub.onrender.com/perfil/me", {
+    fetch(`${API_URL}/perfil/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -91,8 +91,7 @@ async function actualizarPerfil(e: any) {
     return;
   }
 
-  const response = await fetch(
-    "https://musicpricehub.onrender.com/perfil/actualizar",
+  const response = await fetch(`${API_URL}/perfil/actualizar`,
     {
       method: "PUT",
       headers: {
@@ -119,42 +118,41 @@ async function actualizarPerfil(e: any) {
   // ===========================
   //  CAMBIAR CONTRASEÑA
   // ===========================
-  async function cambiarContrasena(e: any) {
-    e.preventDefault();
-    setMensaje("");
+  // CAMBIAR CONTRASEÑA
+async function cambiarContrasena(e: any) {
+  e.preventDefault();
+  setMensaje("");
 
-    if (nueva !== confirmar) {
-      setMensaje("⚠ Las contraseñas no coinciden.");
-      return;
-    }
-
-    const token = localStorage.getItem("access_token");
-
-    const response = await fetch(
-      "https://musicpricehub.onrender.com/perfil/cambiar_contrasena",
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          actual: actual,
-          nueva: nueva,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      setMensaje("⚠ No se pudo cambiar la contraseña.");
-      return;
-    }
-
-    setMensaje("✔ Contraseña cambiada correctamente.");
-    setActual("");
-    setNueva("");
-    setConfirmar("");
+  if (nueva !== confirmar) {
+    setMensaje("⚠ Las contraseñas no coinciden.");
+    return;
   }
+
+  const token = localStorage.getItem("access_token");
+  if (!token) return;
+
+  const response = await fetch(`${API_URL}/perfil/cambiar_contrasena`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      contrasena_actual: actual,
+      contrasena_nueva: nueva,
+    }),
+  });
+
+  if (!response.ok) {
+    setMensaje("⚠ No se pudo cambiar la contraseña.");
+    return;
+  }
+
+  setMensaje("✔ Contraseña cambiada correctamente.");
+  setActual("");
+  setNueva("");
+  setConfirmar("");
+}
 
   if (loading) return <div className="text-center p-6">Cargando perfil...</div>;
   if (!perfil) return <div className="text-center text-red-500 p-6">No hay perfil</div>;
