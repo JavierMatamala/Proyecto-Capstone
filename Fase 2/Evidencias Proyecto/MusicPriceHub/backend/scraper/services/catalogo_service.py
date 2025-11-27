@@ -50,9 +50,17 @@ def sync_producto_desde_scraping(db, tienda: Tienda, datos: dict):
             nombre=nombre,
             marca="Fender",
             modelo="AutoDetect",
+            imagen_url=datos.get("imagen")  # 🟢 guardar imagen al crear
         )
         db.add(producto)
         db.flush()
+        print(f"🟢 Producto creado: {producto.id}")
+    else:
+        # 🟢 actualizar imagen si viene desde el scraping
+        if datos.get("imagen"):
+            producto.imagen_url = datos["imagen"]
+            print(f"🟡 Imagen actualizada: {datos['imagen']}")
+
         print(f"🟢 Producto creado: {producto.id}")
 
     # -----------------------------

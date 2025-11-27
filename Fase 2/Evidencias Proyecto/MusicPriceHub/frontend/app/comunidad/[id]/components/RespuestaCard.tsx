@@ -1,33 +1,57 @@
-import { User, CornerDownRight } from "lucide-react";
+import { User, CornerDownRight, Flag } from "lucide-react";
 
-export default function RespuestaCard({ respuesta }: any) {
-  const eliminado = respuesta.eliminado;
-
+export default function RespuestaCard({ respuesta, onResponder, onLike, onReport }: any) {
   return (
-    <div className={`p-4 rounded-xl border ${eliminado ? "bg-[#15171c] border-[#292d33] opacity-70" : "bg-[#0f1115] border-[#1f242d]"}`}>
-      
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center">
-          <User className="w-5 h-5 text-brand-accent" />
+    <div className="bg-[#111318] border border-[#1f242d] p-4 rounded-xl">
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-brand-accent font-semibold">
+            {respuesta.usuario?.nombre_publico || "Usuario"}
+          </span>
+          <span className="text-xs text-gray-400">
+            {new Date(respuesta.creado_en).toLocaleString("es-CL")}
+          </span>
         </div>
-        <div>
-          <p className="text-sm text-brand-accent font-semibold">
-            {respuesta.usuario?.nombre_publico || respuesta.usuario}
-          </p>
-          <p className="text-xs text-page-soft">{respuesta.creado_en}</p>
+
+        {/* ACCIONES */}
+        <div className="flex items-center gap-3">
+
+          {/* LIKE */}
+          <button
+            onClick={onLike}
+            className="flex items-center gap-1 text-sm hover:text-brand-accent cursor-pointer"
+          >
+            <span className={respuesta.me_gusta ? "text-brand-accent" : "text-gray-400"}>
+              ❤️
+            </span>
+            <span className="text-gray-400">{respuesta.likes || 0}</span>
+          </button>
+
+          {/* REPORTAR */}
+          <button
+            onClick={onReport}
+            className="text-gray-400 hover:text-red-400 cursor-pointer"
+            title="Reportar mensaje"
+          >
+            <Flag size={18} />
+          </button>
         </div>
       </div>
 
-      {/* Contenido */}
-      <p className={`leading-relaxed ${eliminado ? "text-page-soft italic" : "text-page"}`}>
-        {respuesta.contenido}
+      {/* CONTENIDO */}
+      <p className="mt-2">
+        {respuesta.eliminado ? "[mensaje eliminado]" : respuesta.contenido}
       </p>
 
-      {!eliminado && (
-        <button className="mt-3 flex items-center gap-1 text-brand-accent text-sm hover:underline">
-          <CornerDownRight size={16} />
-          Responder
+      {/* RESPONDER */}
+      {!respuesta.eliminado && (
+        <button
+          onClick={() => onResponder(respuesta.id)}
+          className="mt-3 text-brand-accent text-sm hover:underline"
+        >
+          ↳ Responder
         </button>
       )}
     </div>

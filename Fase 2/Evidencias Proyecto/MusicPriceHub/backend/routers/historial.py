@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session, joinedload
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 from database import SessionLocal
-import models
 
-router = APIRouter(prefix="/api/historial", tags=["Historial de Precios"])
+router = APIRouter(prefix="/api/precios", tags=["Historial de Precios"])
 
 def get_db():
     db = SessionLocal()
@@ -12,17 +11,35 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/{producto_id}")
-def historial_producto(producto_id: str, db: Session = Depends(get_db)):
-    producto = db.query(models.Producto)\
-        .options(joinedload(models.Producto.historial))\
-        .filter(models.Producto.id == producto_id)\
-        .first()
-    if not producto:
-        return {"mensaje": "Producto no encontrado"}
-    return {
-        "producto": producto.nombre,
-        "historial": [
-            {"fecha": h.fecha, "precio": h.precio} for h in producto.historial
-        ]
-    }
+
+@router.get("/historial/{producto_id}")
+def historial_precios(producto_id: str, db: Session = Depends(get_db)):
+
+    sql = """
+        SELECT 
+            h.precio_centavos,
+            h.moneda,
+            h.fecha_scraping AS fecha,
+            t.nombre AS tienda
+        FROM precios.historial_precios h
+        JOIN precios.ofertas_actuales o 
+            ON o.tienda_producto_id = h.tienda_producto_id
+        JOIN catalogo.tienda t
+            ON t.id = o.tienda_id
+        WHERE o.producto_id = :pid
+        ORDER BY fecha ASC;
+    """
+
+    rows = db.execute(sql, {"pid": producto_id}).fetchall()
+
+    historial = [
+        {
+            "precio_centavos": r.precio_centavos,
+            "moneda": r.moneda,
+            "fecha": r.fecha,
+            "tienda": r.tienda
+        }
+        for r in rows
+    ]
+
+    return historial

@@ -35,19 +35,20 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-localStorage.setItem("access_token", data.access_token);
-
 localStorage.setItem(
   "usuario",
   JSON.stringify({
     id: data.usuario.id,
-    nombre: data.usuario.nombre_publico,
     correo: data.usuario.correo,
-    avatar_url: data.usuario.perfil?.avatar_url ?? ""
+    nombre: data.usuario.nombre,
+    avatar_url: data.usuario.avatar_url ?? "",
+    es_admin: data.usuario.es_admin
   })
 );
 
-localStorage.setItem("access_token", data.access_token);
+
+router.push("/"); 
+
 
       window.location.href = "/";
     } catch (err) {

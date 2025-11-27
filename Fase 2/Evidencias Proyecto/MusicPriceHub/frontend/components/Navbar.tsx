@@ -9,6 +9,7 @@ import {
   Search,
   Sun,
   Moon,
+  UserCircle,
 } from "lucide-react";
 
 type Theme = "light" | "dark";
@@ -31,10 +32,14 @@ export default function Navbar() {
     document.documentElement.dataset.theme = initial;
 
     // NEW: cargar usuario desde localStorage
-    const u = window.localStorage.getItem("usuario");
-    if (u) {
-      setUsuario(JSON.parse(u));
-    }
+const u = window.localStorage.getItem("usuario");
+if (u) {
+  const data = JSON.parse(u);
+  setUsuario({
+    ...data,
+    es_admin: data.es_admin ?? false,
+  });
+}
   }, []);
 
   // NEW: cerrar sesión
@@ -42,7 +47,7 @@ export default function Navbar() {
     localStorage.removeItem("usuario");
     localStorage.removeItem("access_token");
     setUsuario(null);
-    window.location.href = "/"; // refrescar
+    window.location.href = "/"; // refrescar  
   };
   // -----------------------------------
 
@@ -76,12 +81,7 @@ export default function Navbar() {
           </button>
 
           <Link href="/" className="flex items-center gap-2">
-            {usuario?.avatar_url ? (
-              <img
-                src={usuario.avatar_url}
-                className="h-8 w-8 rounded-full object-cover"
-                alt="avatar"/>) : (
-            <Guitar className="h-7 w-7 text-brand-accent" />)}
+            <Guitar className="h-7 w-7 text-brand-accent" /> 
             <span className="text-lg font-semibold text-white">
               MusicPriceHub
             </span>
@@ -113,27 +113,44 @@ export default function Navbar() {
 
           {/* NEW: si hay usuario mostrar saludo + logout */}
           {usuario ? (
-            <div className="flex items-center gap-3 text-white">
-              <span className="hidden lg:inline">Hola, {usuario.nombre}</span>
-              <Link
-              href="/perfil"
-              className="hidden lg:inline rounded-md bg-brand-accent px-4 py-2 text-sm font-semibold text-[#020617] shadow hover:bg-brand-accent-soft"
-            >Perfil</Link>
-              <button
-                onClick={logout}
-                className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-red-600"
-              >
-                Cerrar sesión
-              </button>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="hidden rounded-md bg-brand-accent px-4 py-2 text-sm font-semibold text-[#020617] shadow hover:bg-brand-accent-soft lg:inline-block"
-            >
-              Iniciar Sesión
-            </Link>
-          )}
+  <div className="flex items-center gap-3 text-white">
+
+    {/* Avatar → redirige al perfil */}
+    <Link href="/perfil">
+      {usuario.avatar_url ? (
+        <img
+          src={usuario.avatar_url}
+          className="w-9 h-9 rounded-full object-cover border border-brand-accent-soft cursor-pointer hover:opacity-80 transition"
+          alt="avatar"
+        />
+      ) : (
+        <UserCircle
+          className="w-9 h-9 text-brand-accent cursor-pointer hover:opacity-80 transition"
+        />
+      )}
+    </Link>
+
+    {/* Texto saludo */}
+    <span className="hidden lg:inline">
+      Hola, {usuario.nombre}
+    </span>
+
+    {/* Botón cerrar sesión */}
+    <button
+      onClick={logout}
+      className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-red-600"
+    >
+      Cerrar sesión
+    </button>
+  </div>
+) : (
+  <Link
+    href="/login"
+    className="hidden rounded-md bg-brand-accent px-4 py-2 text-sm font-semibold text-[#020617] shadow hover:bg-brand-accent-soft lg:inline-block"
+  >
+    Iniciar Sesión
+  </Link>
+)}
         </div>
       </div>
 
@@ -190,13 +207,24 @@ export default function Navbar() {
             Marketplace
           </Link>
 
-          <Link href="/comunidad/id" className="rounded px-2 py-1 hover:bg-page/20 text-white">
+          <Link href="/comunidad" className="rounded px-2 py-1 hover:bg-page/20 text-white">
             Comunidad
           </Link>
 
           <Link href="/historial" className="rounded px-2 py-1 hover:bg-page/20 text-white">
             Historial de precios
           </Link>
+
+            {usuario?.es_admin && (
+              <Link
+                href="/comunidad/moderar"
+                className="rounded px-2 py-1 hover:bg-page/20 text-white"
+              >
+                Moderar reportes
+              </Link>
+            )}
+
+
 
           {!usuario && (
             <Link

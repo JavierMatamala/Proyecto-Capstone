@@ -50,23 +50,18 @@ export default function RegisterPage() {
       } catch (_) {
         data = null;
       }
-
-      // Guardar token si viene
-      if (data?.access_token) {
-        localStorage.setItem("access_token", data.access_token);
-      }
-
       // Guardar usuario si viene
       if (data?.usuario) {
         localStorage.setItem(
-          "usuario",
-          JSON.stringify({
-            id: data.usuario.id,
-            nombre: data.usuario.nombre_publico,
-            correo: data.usuario.correo,
-            avatar_url: data.usuario.perfil?.avatar_url ?? "",
-          })
-        );
+  "usuario",
+  JSON.stringify({
+    id: data.usuario.id,
+    correo: data.usuario.correo,
+    nombre: data.usuario.nombre,
+    avatar_url: data.usuario.avatar_url ?? "",
+    es_admin: data.usuario.es_admin === true
+  })
+);
       }
 
       // Redirigir siempre al login

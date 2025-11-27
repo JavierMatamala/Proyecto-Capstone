@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from utils.seguridad import get_current_user_optional
+from utils.seguridad import get_current_user
 from models import (
     CategoriaForo, TemaForo, MensajeForo,
     LikeMensajeForo, ReporteMensajeForo, Usuario
@@ -232,7 +233,7 @@ def dar_like(
     mensaje = db.query(MensajeForo).filter(MensajeForo.id == mensaje_id).first()
     if not mensaje:
         raise HTTPException(status_code=404, detail="Mensaje no encontrado")
-
+    
     existente = (
         db.query(LikeMensajeForo)
         .filter(LikeMensajeForo.mensaje_id == mensaje_id,
@@ -422,6 +423,7 @@ def detalle_tema_frontend(
     raices: list[str] = []
 
     for m in mensajes:
+        db.refresh(m)
         # usuario_actual puede ser None (autenticación opcional)
         me_gusta = False
         if usuario_actual:

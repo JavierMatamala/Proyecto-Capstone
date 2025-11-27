@@ -62,6 +62,7 @@ export default function SideMenu() {
           <Link href="/comunidad" className="flex items-center gap-2 hover:text-brand-accent">
             <MessagesSquare size={20} /> Comunidad
           </Link>
+          
         </nav>
       </div>
     </>

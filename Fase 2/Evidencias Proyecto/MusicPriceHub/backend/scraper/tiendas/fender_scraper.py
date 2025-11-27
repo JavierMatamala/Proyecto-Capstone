@@ -19,11 +19,22 @@ class FenderScraper(BaseScraper):
         if price_tag:
             precio = price_tag.text.strip()
 
-        # 3) IMAGEN
+        # IMAGEN (MagicZoom)
         imagen = None
-        img_tag = soup.select_one(".product-image img")
+
+        img_tag = soup.select_one(".MagicZoom img")
         if img_tag:
-            imagen = img_tag.get("src")
+            imagen = img_tag.get("src") or img_tag.get("data-zoom-image")
+
+        if not imagen:
+            img_tag = soup.select_one("img[data-zoom-image]")
+            if img_tag:
+                imagen = img_tag.get("data-zoom-image")
+
+        if not imagen:
+            img_tag = soup.select_one("img")
+            if img_tag:
+                imagen = img_tag.get("src")
 
         # 4) DESCRIPCIÓN
         descripcion = None

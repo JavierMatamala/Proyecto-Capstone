@@ -1,23 +1,21 @@
-// utils/auth.ts
-
 export function guardarSesion(token: string, usuario: any) {
   localStorage.setItem("access_token", token);
-  localStorage.setItem("usuario", JSON.stringify(usuario));
-}
 
-export function obtenerUsuario() {
-  if (typeof window === "undefined") return null;
-  const u = localStorage.getItem("usuario");
-  return u ? JSON.parse(u) : null;
-}
-
-export function obtenerToken() {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("access_token");
+  localStorage.setItem(
+    "usuario",
+    JSON.stringify({
+      id: usuario.id,
+      correo: usuario.correo,
+      nombre: usuario.nombre,
+      avatar_url: usuario.avatar_url ?? "",
+      es_admin: usuario.es_admin === true,
+    })
+  );
 }
 
 export function cerrarSesion() {
+  if (typeof window === "undefined") return;
+
   localStorage.removeItem("access_token");
   localStorage.removeItem("usuario");
-  window.location.href = "/";
 }

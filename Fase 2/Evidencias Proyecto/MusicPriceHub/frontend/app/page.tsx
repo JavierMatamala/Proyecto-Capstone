@@ -16,7 +16,7 @@ type Producto = {
 export default function Home() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [error, setError] = useState("");
-
+  
   useEffect(() => {
     fetch("http://localhost:8000/api/productos/")
       .then((res) => res.json())

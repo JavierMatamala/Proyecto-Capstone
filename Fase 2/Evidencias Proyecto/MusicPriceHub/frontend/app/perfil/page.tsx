@@ -89,6 +89,7 @@ async function actualizarPerfil(e: any) {
   if (!token) {
     setMensaje("⚠ No hay token. Debes iniciar sesión nuevamente.");
     return;
+    
   }
 
   const response = await fetch(`${API_URL}/perfil/actualizar`,
@@ -113,6 +114,21 @@ async function actualizarPerfil(e: any) {
   }
 
   setMensaje("✔ Perfil actualizado correctamente.");
+  const usuarioActual = JSON.parse(localStorage.getItem("usuario") || "{}");
+
+localStorage.setItem(
+  "usuario",
+  JSON.stringify({
+    ...usuarioActual,
+    nombre: nombrePublico,
+    region,
+    comuna,
+    avatar_url: avatar, // si también guardas avatar en backend
+  })
+);
+  setTimeout(() => {
+  window.location.href = "/";
+}, 800);
 }
 
   // ===========================

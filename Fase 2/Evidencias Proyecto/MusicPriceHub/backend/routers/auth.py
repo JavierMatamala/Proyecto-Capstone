@@ -79,7 +79,10 @@ def iniciar_sesion(datos: dict, db: Session = Depends(get_db)):
         "access_token": token,
         "token_type": "bearer",
         "usuario": {
+            "id": str(usuario.id),
+            "correo": usuario.correo,
+            "es_admin": usuario.es_admin,
             "nombre": usuario.perfil.nombre_publico if usuario.perfil else None,
-            "correo": usuario.correo
+            "avatar_url": usuario.perfil.avatar_url if usuario.perfil else None
         }
     }
