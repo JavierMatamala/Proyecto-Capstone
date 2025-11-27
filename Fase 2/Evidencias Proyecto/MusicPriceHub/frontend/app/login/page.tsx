@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft, User } from "lucide-react";
 
+import { guardarSesion } from "@/utils/auth";
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -33,17 +35,21 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      // Guardar token EXACTO como antes
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem(
-        "usuario",
-        JSON.stringify({
-          nombre: data.usuario.nombre,
-          correo: data.usuario.correo,
-        })
-      );
+localStorage.setItem("access_token", data.access_token);
 
-      router.push("/");
+localStorage.setItem(
+  "usuario",
+  JSON.stringify({
+    id: data.usuario.id,
+    nombre: data.usuario.nombre_publico,
+    correo: data.usuario.correo,
+    avatar_url: data.usuario.perfil?.avatar_url ?? ""
+  })
+);
+
+localStorage.setItem("access_token", data.access_token);
+
+      window.location.href = "/";
     } catch (err) {
       setError("Correo o contraseña incorrectos.");
     }

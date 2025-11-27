@@ -18,55 +18,73 @@ export default function RegisterPage() {
 
   const [error, setError] = useState("");
 
-const [formData, setFormData] = useState({
-  nombre: "",
-  correo: "",
-  contraseña: "",
-});
-
   const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    if (contrasena !== confirmarContrasena) {
-      setError("Las contraseñas no coinciden.");
+  if (contrasena !== confirmarContrasena) {
+    setError("Las contraseñas no coinciden.");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "https://musicpricehub.onrender.com/auth/registro",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre,
+          correo,
+          contraseña: contrasena,
+        }),
+      }
+    );
+
+    // Si la API devuelve 201 o 200 = éxito
+    if (response.status === 201 || response.status === 200) {
+      // Intentar leer JSON si existe
+      let data = null;
+      try {
+        data = await response.json();
+      } catch (_) {
+        data = null;
+      }
+
+      // Guardar token si viene
+      if (data?.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+      }
+
+      // Guardar usuario si viene
+      if (data?.usuario) {
+        localStorage.setItem(
+          "usuario",
+          JSON.stringify({
+            id: data.usuario.id,
+            nombre: data.usuario.nombre_publico,
+            correo: data.usuario.correo,
+            avatar_url: data.usuario.perfil?.avatar_url ?? "",
+          })
+        );
+      }
+
+      // Redirigir siempre al login
+      router.push("/login");
       return;
     }
 
+    // Si NO es éxito, intentar obtener error del backend
+    let errorData = null;
     try {
-      const response = await fetch("https://musicpricehub.onrender.com/auth/registro", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nombre: formData.nombre,
-            correo: formData.correo,
-            contraseña: formData.contraseña
-          })
-});
+      errorData = await response.json();
+    } catch (_) {}
 
-      if (!response.ok) {
-        throw new Error("Error al registrar.");
-      }
-
-      const data = await response.json();
-
-      // Guardar token igual que en Login
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem(
-        "usuario",
-        JSON.stringify({
-          nombre: data.usuario.nombre,
-          correo: data.usuario.correo,
-        })
-      );
-
-      router.push("/");
-    } catch (err) {
-      setError("No se pudo crear la cuenta. Intenta nuevamente.");
-    }
-  };
+    setError(errorData?.detail || "No se pudo crear la cuenta.");
+  } catch (_) {
+    setError("No se pudo crear la cuenta. Intenta nuevamente.");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-page text-page">

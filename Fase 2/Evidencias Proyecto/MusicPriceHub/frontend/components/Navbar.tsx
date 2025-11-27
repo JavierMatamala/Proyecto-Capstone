@@ -18,6 +18,9 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
 
+  // NEW -------------------------------
+  const [usuario, setUsuario] = useState<any>(null);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -26,7 +29,22 @@ export default function Navbar() {
 
     setTheme(initial);
     document.documentElement.dataset.theme = initial;
+
+    // NEW: cargar usuario desde localStorage
+    const u = window.localStorage.getItem("usuario");
+    if (u) {
+      setUsuario(JSON.parse(u));
+    }
   }, []);
+
+  // NEW: cerrar sesión
+  const logout = () => {
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("access_token");
+    setUsuario(null);
+    window.location.href = "/"; // refrescar
+  };
+  // -----------------------------------
 
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
@@ -42,7 +60,7 @@ export default function Navbar() {
       {/* NAV SUPERIOR */}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
 
-        {/* IZQUIERDA: hamburguesa + logo */}
+        {/* IZQUIERDA: Hamburguesa + logo */}
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -57,9 +75,13 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* LOGO */}
           <Link href="/" className="flex items-center gap-2">
-            <Guitar className="h-7 w-7 text-brand-accent" />
+            {usuario?.avatar_url ? (
+              <img
+                src={usuario.avatar_url}
+                className="h-8 w-8 rounded-full object-cover"
+                alt="avatar"/>) : (
+            <Guitar className="h-7 w-7 text-brand-accent" />)}
             <span className="text-lg font-semibold text-white">
               MusicPriceHub
             </span>
@@ -89,12 +111,29 @@ export default function Navbar() {
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
 
-          <Link
-            href="/login"
-            className="hidden rounded-md bg-brand-accent px-4 py-2 text-sm font-semibold text-[#020617] shadow hover:bg-brand-accent-soft lg:inline-block"
-          >
-            Iniciar Sesión
-          </Link>
+          {/* NEW: si hay usuario mostrar saludo + logout */}
+          {usuario ? (
+            <div className="flex items-center gap-3 text-white">
+              <span className="hidden lg:inline">Hola, {usuario.nombre}</span>
+              <Link
+              href="/perfil"
+              className="hidden lg:inline rounded-md bg-brand-accent px-4 py-2 text-sm font-semibold text-[#020617] shadow hover:bg-brand-accent-soft"
+            >Perfil</Link>
+              <button
+                onClick={logout}
+                className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-red-600"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden rounded-md bg-brand-accent px-4 py-2 text-sm font-semibold text-[#020617] shadow hover:bg-brand-accent-soft lg:inline-block"
+            >
+              Iniciar Sesión
+            </Link>
+          )}
         </div>
       </div>
 
@@ -126,7 +165,6 @@ export default function Navbar() {
                     border-r border-brand-accent-soft/30 transform transition-transform duration-300
                     ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        {/* HEADER DEL PANEL */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-brand-accent-soft/20">
           <div className="flex items-center gap-2">
             <Guitar className="h-5 w-5 text-brand-accent" />
@@ -143,7 +181,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* LINKS DEL PANEL */}
         <nav className="flex flex-col px-4 gap-2 text-sm mt-2">
           <Link href="/" className="rounded px-2 py-1 hover:bg-page/20 text-white">
             Inicio
@@ -153,7 +190,7 @@ export default function Navbar() {
             Marketplace
           </Link>
 
-          <Link href="/comunidad" className="rounded px-2 py-1 hover:bg-page/20 text-white">
+          <Link href="/comunidad/id" className="rounded px-2 py-1 hover:bg-page/20 text-white">
             Comunidad
           </Link>
 
@@ -161,12 +198,23 @@ export default function Navbar() {
             Historial de precios
           </Link>
 
-          <Link
-            href="/login"
-            className="mt-3 rounded border border-brand-accent-soft/50 px-3 py-1 text-center text-white"
-          >
-            Iniciar Sesión
-          </Link>
+          {!usuario && (
+            <Link
+              href="/login"
+              className="mt-3 rounded border border-brand-accent-soft/50 px-3 py-1 text-center text-white"
+            >
+              Iniciar Sesión
+            </Link>
+          )}
+
+          {usuario && (
+            <button
+              onClick={logout}
+              className="mt-3 rounded bg-red-500 text-white px-3 py-1"
+            >
+              Cerrar Sesión
+            </button>
+          )}
         </nav>
       </div>
     </header>

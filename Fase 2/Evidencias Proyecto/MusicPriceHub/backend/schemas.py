@@ -51,13 +51,19 @@ class UsuarioMostrar(BaseModel):
  # ---- Mostrar perfil ---- 
 class PerfilMostrar(BaseModel):
     nombre_publico: str
-    pais: Optional[str]
-    ciudad: Optional[str]
+    region: Optional[str]
+    comuna: Optional[str]
     avatar_url: Optional[str]
 
     class Config:
         from_attributes = True
 UsuarioMostrar.update_forward_refs()
+# ---- Actualizar perfil ----
+class PerfilActualizar(BaseModel):
+    nombre_publico: Optional[str] = None
+    region: Optional[str] = None
+    comuna: Optional[str] = None
+    avatar_url: Optional[str] = None
 
  # ---- Usuario Login ---- 
 class UsuarioLogin(BaseModel):
