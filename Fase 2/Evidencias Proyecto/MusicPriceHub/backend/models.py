@@ -64,7 +64,18 @@ class Producto(Base):
     marca = Column(String)
     modelo = Column(String)
     imagen_url = Column(String, nullable=True)
-    
+    descripcion = Column(Text, nullable=True)
+    url_fuente = Column(String, nullable=True)
+    especificaciones = Column(JSONB, nullable=True)
+    categoria_id = Column(UUID(as_uuid=True), nullable=True)
+    precio_base_centavos = Column(Integer, nullable=True)
+
+
+    creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
+    actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+
     ofertas = relationship("OfertaActual", back_populates="producto")
     alertas_precio = relationship("AlertaPrecio", back_populates="producto")
     tiendas_producto = relationship("TiendaProducto", back_populates="producto")

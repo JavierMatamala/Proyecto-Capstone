@@ -214,7 +214,15 @@ if (u) {
           <Link href="/historial" className="rounded px-2 py-1 hover:bg-page/20 text-white">
             Historial de precios
           </Link>
-
+            {/* 🔥 SOLO ADMIN: agregar producto */}
+            {usuario?.es_admin && (
+              <Link
+                href="/producto/nuevo"
+                className="rounded px-2 py-1 hover:bg-page/20 text-brand-accent font-semibold"
+              >
+                ➕ Agregar producto
+              </Link>
+            )}
             {usuario?.es_admin && (
               <Link
                 href="/comunidad/moderar"
@@ -222,10 +230,8 @@ if (u) {
               >
                 Moderar reportes
               </Link>
+            
             )}
-
-
-
           {!usuario && (
             <Link
               href="/login"

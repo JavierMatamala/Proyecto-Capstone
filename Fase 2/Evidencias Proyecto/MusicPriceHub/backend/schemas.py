@@ -2,36 +2,72 @@ from pydantic import BaseModel, EmailStr, constr, UUID4,Field
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
-# ---- Clase base (común) ----
-class ProductoBase(BaseModel):
+# ============================
+# PRODUCTOS
+# ============================
+class ProductoCrear(BaseModel):
     nombre: str
-    marca: Optional[str]
-    modelo: Optional[str]
+    marca: Optional[str] = None
+    modelo: Optional[str] = None
+    descripcion: Optional[str] = None
+    imagen_url: Optional[str] = None
+    url_fuente: Optional[str] = None
+    especificaciones: Optional[dict] = None
+    categoria_id: Optional[UUID] = None
+    precio_base_centavos: Optional[int] = None
 
-# ---- Para crear un nuevo producto ----
-class ProductoCrear(ProductoBase):
-    pass
 
-# ---- Para mostrar producto (con ID y ofertas) ----
 class OfertaBase(BaseModel):
     id: UUID
-    precio: int = Field(..., alias="precio_centavos")
+    precio_centavos: int
     moneda: str
     disponibilidad: Optional[str] = None
-    fecha_actualizacion: datetime = Field(..., alias="fecha_scraping")
+    fecha_scraping: datetime
     tienda_id: UUID
 
     class Config:
         from_attributes = True
-        populate_by_name = True
 
-class ProductoMostrar(ProductoBase):
+
+
+class ProductoMostrar(BaseModel):
     id: UUID
+    nombre: str
+    marca: Optional[str]
+    modelo: Optional[str]
+    descripcion: Optional[str]
+    imagen_url: Optional[str]
+    url_fuente: Optional[str]
+    especificaciones: Optional[dict]
+    precio_base_centavos: Optional[int]
+    precio_final: Optional[int] = None        # 👈 ¡ESTE CAMPO ES OBLIGATORIO!
     ofertas: Optional[List[OfertaBase]] = []
-    imagen_url: Optional[str] = None
-        
+
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+# ============================
+# ofertas
+# ============================
+
+class OfertaTienda(BaseModel):
+    tienda: str
+    url_producto: str
+    precio: int
+    disponibilidad: Optional[str]
+
+class ProductoDetalle(BaseModel):
+    id: UUID
+    nombre: str
+    marca: Optional[str]
+    modelo: Optional[str]
+    descripcion: Optional[str]
+    imagen_url: Optional[str]
+
+    ofertas: List[OfertaTienda] = []
+
+    class Config:
+        from_attributes = True
 
 # ---- Crear usuario ----
 class UsuarioCrear(BaseModel):
@@ -77,23 +113,6 @@ class AlertaBase(BaseModel):
     precio_objetivo: float
     fecha_creacion: Optional[datetime]
     usuario: Optional[UsuarioMostrar]
-    class Config:
-        from_attributes = True
-
-# ---- Producto ----
-class ProductoBase(BaseModel):
-    nombre: str
-    marca: Optional[str]
-    modelo: Optional[str]
-
-class ProductoCrear(ProductoBase):
-    pass
-
-class ProductoMostrar(ProductoBase):
-    id: UUID
-    ofertas: Optional[List[OfertaBase]] = []
-    alertas: Optional[List[AlertaBase]] = []
-
     class Config:
         from_attributes = True
 
@@ -413,3 +432,18 @@ class ConversacionListaResponse(BaseModel):
     otro_usuario_id: str
     otro_usuario_nombre: str
     ultimo_mensaje: Optional[UltimoMensajeResponse] = None
+
+
+
+class TiendaProductoCrear(BaseModel):
+    tienda_id: str
+    producto_id: str
+    url_producto: str
+    sku_tienda: str | None = None
+
+
+class OfertaCrear(BaseModel):
+    tienda_producto_id: str
+    precio_centavos: int
+    disponibilidad: str = "Disponible"
+    moneda: str = "CLP"
