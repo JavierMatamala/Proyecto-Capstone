@@ -29,7 +29,7 @@ export default function RegisterPage() {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/auth/registro",
+        "https://musicpricehub.onrender.com/auth/registro",
         {
           method: "POST",
           headers: {
