@@ -28,6 +28,7 @@ origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://musicpricehub.onrender.com",
+    "https://musicpricehub-web-site.onrender.com",
 ]
 
 app.add_middleware(
