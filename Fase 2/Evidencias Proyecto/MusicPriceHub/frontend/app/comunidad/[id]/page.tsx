@@ -7,7 +7,7 @@ import TemaCard from "./components/TemaCard";
 import RespuestaCard from "./components/RespuestaCard";
 import CrearRespuesta from "./components/CrearRespuesta";
 import ModalReportar from "./components/ModalReportar";
-
+import {ChatWidget} from "../../chat/chat";
 // ===============================
 // Función auxiliar
 // ===============================
@@ -49,7 +49,7 @@ export default function TemaDetallePage() {
     }
 
     const res = await fetch(
-      `http://localhost:8000/comunidad/mensajes/${mensajeAReportar}/reportes`,
+      `https://musicpricehub.onrender.com/comunidad/mensajes/${mensajeAReportar}/reportes`,
       {
         method: "POST",
         headers: {
@@ -84,7 +84,7 @@ export default function TemaDetallePage() {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/comunidad/mensajes/${mensajeId}/like`,
+        `https://musicpricehub.onrender.com/comunidad/mensajes/${mensajeId}/like`,
         {
           method: metodo,
           headers: {
@@ -101,7 +101,7 @@ export default function TemaDetallePage() {
       }
 
       const data = await fetch(
-        `http://localhost:8000/comunidad/temas/${temaId}/detalle-frontend`,
+        `https://musicpricehub.onrender.com/comunidad/temas/${temaId}/detalle-frontend`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -129,7 +129,7 @@ export default function TemaDetallePage() {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/comunidad/temas/${temaId}/mensajes`,
+        `https://musicpricehub.onrender.com/comunidad/temas/${temaId}/mensajes`,
         {
           method: "POST",
           headers: {
@@ -146,7 +146,7 @@ export default function TemaDetallePage() {
       if (!res.ok) return alert("Error al enviar respuesta");
 
       const data = await fetch(
-        `http://localhost:8000/comunidad/temas/${temaId}/detalle-frontend`,
+        `https://musicpricehub.onrender.com/comunidad/temas/${temaId}/detalle-frontend`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -178,7 +178,7 @@ export default function TemaDetallePage() {
         const token = localStorage.getItem("access_token");
 
         const res = await fetch(
-          `http://localhost:8000/comunidad/temas/${temaId}/detalle-frontend`,
+          `https://musicpricehub.onrender.com/comunidad/temas/${temaId}/detalle-frontend`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -247,6 +247,7 @@ export default function TemaDetallePage() {
               />
             </div>
           ))}
+          <ChatWidget />
         </div>
 
         {/* FORM RESPUESTA */}
@@ -265,6 +266,7 @@ export default function TemaDetallePage() {
       />
 
     </div>
+    
   );
 }
 

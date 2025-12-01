@@ -10,22 +10,43 @@ type Oferta = {
 type Producto = {
   id: string;
   nombre: string;
+  marca?: string;
+  modelo?: string;
   imagen_url?: string;
   precio_final?: number;   // ← EL PRECIO VIENE DESDE EL BACKEND
 };
 
-export default function Home() {
+export default function HomePage() {
   const [productos, setProductos] = useState<Producto[]>([]);
-  const [error, setError] = useState("");
-  
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    fetch("http://localhost:8000/api/productos/")
-      .then((res) => res.json())
-      .then((data) => setProductos(data))
-      .catch(() => setError("No se pudo conectar con la API."));
+    const fetchProductos = async () => {
+      try {
+        const resp = await fetch("http://127.0.0.1:8000/productos");
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => null);
+          setError(
+            typeof err?.detail === "string"
+              ? err.detail
+              : "No se pudieron cargar los productos."
+          );
+          return;
+        }
+        const data = await resp.json();
+        setProductos(data);
+      } catch (_) {
+        setError("Error de conexión al cargar los productos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductos();
   }, []);
 useEffect(() => {
-  fetch("http://localhost:8000/api/productos/")
+  fetch("https://musicpricehub.onrender.com/api/productos/")
     .then((res) => res.json())
     .then((data) => {
       console.log("📦 PRODUCTOS RECIBIDOS DESDE LA API:", data);
@@ -34,20 +55,26 @@ useEffect(() => {
     .catch(() => setError("No se pudo conectar con la API."));
 }, []);
 
+  if (loading) {
+    return <p className="p-4">Cargando productos...</p>;
+  }
+
   return (
-    <main className="p-6">
+    <main className="p-4 max-w-5xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">🎶 Productos disponibles</h2>
 
-      <h2 className="text-3xl font-bold mb-6 text-brand-accent text-center">
-        🎶 Productos disponibles
-      </h2>
-
-      {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+      {error && (
+        <p className="mb-4 text-sm text-red-500">
+          {typeof error === "string"
+            ? error
+            : "Ocurrió un error al cargar los productos."}
+        </p>
+      )}
 
       {productos.length === 0 ? (
-        <p className="text-page-soft text-center">No hay productos registrados.</p>
+        <p>No hay productos registrados.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {productos.map((p) => (
             <Link
               key={p.id}
@@ -95,7 +122,7 @@ useEffect(() => {
                 e.preventDefault();
                 if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
 
-                await fetch(`http://localhost:8000/api/productos/${p.id}`, {
+                await fetch(`https://musicpricehub.onrender.com/api/productos/${p.id}`, {
                   method: "DELETE",
                 });
 

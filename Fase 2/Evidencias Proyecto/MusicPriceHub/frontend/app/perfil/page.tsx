@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-const API_URL = "https://musicpricehub.onrender.com";
+import {ChatWidget} from "../chat/chat";
+const API_URL = "http://127.0.0.1:8000";
+
 // =========================
 //  DATOS REGIONES Y COMUNAS
 // =========================
@@ -56,27 +58,41 @@ export default function PerfilPage() {
   // ===========================
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (!token) return;
+
+    if (!token) {
+      setLoading(false);
+      setMensaje("⚠ Debes iniciar sesión para ver tu perfil.");
+      return;
+    }
 
     fetch(`${API_URL}/perfil/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => null);
+          throw err?.detail ?? "No se pudo cargar el perfil.";
+        }
+        return r.json();
+      })
       .then((data) => {
         setPerfil(data);
         setNombrePublico(data.nombre_publico ?? "");
-
         setRegion(data.region ?? "");
         setComuna(data.comuna ?? "");
-
-        // Avatar
         setAvatar(data.avatar_url ?? "");
         setAvatarPreview(data.avatar_url ?? "");
       })
+      .catch((err) => {
+        setMensaje(
+          typeof err === "string" ? err : "No se pudo cargar el perfil."
+        );
+      })
       .finally(() => setLoading(false));
   }, []);
+
 
   // ===========================
   //  ACTUALIZAR PERFIL
@@ -170,15 +186,28 @@ async function cambiarContrasena(e: any) {
   setConfirmar("");
 }
 
-  if (loading) return <div className="text-center p-6">Cargando perfil...</div>;
-  if (!perfil) return <div className="text-center text-red-500 p-6">No hay perfil</div>;
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <p>Cargando perfil...</p>
+      </main>
+    );
+  }
+
+  if (!perfil) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <p>{mensaje || "No hay perfil disponible."}</p>
+      </main>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto pt-28 px-4 text-white">
       <h1 className="text-3xl font-semibold mb-6 text-brand-accent">Mi Perfil</h1>
 
       {mensaje && (
-        <p className="mb-4 p-3 rounded bg-black/20 border border-brand-accent-soft text-brand-accent">
+        <p className="mb-3 text-sm text-yellow-400">
           {mensaje}
         </p>
       )}
@@ -304,6 +333,7 @@ async function cambiarContrasena(e: any) {
           </button>
         </form>
       </div>
+      <ChatWidget />
     </div>
   );
 }

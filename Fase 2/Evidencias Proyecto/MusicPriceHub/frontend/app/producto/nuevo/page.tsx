@@ -101,7 +101,7 @@ const payload = {
   // =============================================
   // 3. ENVIAR PRODUCTO A TU BACKEND
   // =============================================
-  const res = await fetch("http://localhost:8000/api/productos/", {
+  const res = await fetch("https://musicpricehub.onrender.com/api/productos/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

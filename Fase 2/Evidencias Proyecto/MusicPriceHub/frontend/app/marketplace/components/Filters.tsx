@@ -113,8 +113,7 @@ export default function Filters({ onChange }: { onChange: (filtros: any) => void
         >
           <option value="">Sin orden</option>
           <option value="precio_asc">Precio: menor a mayor</option>
-          <option value="precio_desc">Precio: mayor a mayor</option>
-          <option value="reciente">Más recientes</option>
+          <option value="precio_desc">Precio: mayor a menor</option>
         </select>
       </div>
 

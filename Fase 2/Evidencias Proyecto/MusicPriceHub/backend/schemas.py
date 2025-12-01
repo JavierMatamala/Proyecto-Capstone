@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, constr, UUID4,Field
+from pydantic import BaseModel, EmailStr, constr, UUID4, Field, ConfigDict
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
@@ -15,7 +15,6 @@ class ProductoCrear(BaseModel):
     especificaciones: Optional[dict] = None
     categoria_id: Optional[UUID] = None
     precio_base_centavos: Optional[int] = None
-
 
 class OfertaBase(BaseModel):
     id: UUID
@@ -70,51 +69,55 @@ class ProductoDetalle(BaseModel):
         from_attributes = True
 
 # ---- Crear usuario ----
+
 class UsuarioCrear(BaseModel):
     nombre: str
     correo: EmailStr
     contraseña: constr(min_length=6, max_length=72)
 
 # ---- Mostrar usuario ----
-class UsuarioMostrar(BaseModel):
-    id: UUID
-    correo: EmailStr
-    es_admin: bool
-    perfil: Optional["PerfilMostrar"]
 
-    class Config:
-        from_attributes = True
- # ---- Mostrar perfil ---- 
 class PerfilMostrar(BaseModel):
     nombre_publico: str
     region: Optional[str]
     comuna: Optional[str]
     avatar_url: Optional[str]
 
-    class Config:
-        from_attributes = True
-UsuarioMostrar.update_forward_refs()
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UsuarioMostrar(BaseModel):
+    id: UUID
+    correo: EmailStr
+    es_admin: bool
+    perfil: Optional["PerfilMostrar"]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+UsuarioMostrar.model_rebuild()
+
 # ---- Actualizar perfil ----
+
 class PerfilActualizar(BaseModel):
     nombre_publico: Optional[str] = None
     region: Optional[str] = None
     comuna: Optional[str] = None
     avatar_url: Optional[str] = None
 
- # ---- Usuario Login ---- 
+# ---- Usuario Login ----
+
 class UsuarioLogin(BaseModel):
     correo: EmailStr
     contraseña: str
 
+# ---- Alerta (versión antigua, parece duplicada) ----
 
-# ---- Alerta ----
 class AlertaBase(BaseModel):
     id: UUID
     precio_objetivo: float
     fecha_creacion: Optional[datetime]
     usuario: Optional[UsuarioMostrar]
-    class Config:
-        from_attributes = True
 
 # ============================
 # 🔹 SCHEMAS DE ALERTAS
@@ -125,43 +128,47 @@ class AlertaCrear(BaseModel):
     usuario_id: UUID
     precio_objetivo: float
 
+
 class AlertaBase(BaseModel):
     id: UUID
     precio_objetivo: float
     fecha_creacion: Optional[datetime] = None
-    producto: Optional["ProductoMostrar"]
-    usuario: Optional["UsuarioMostrar"]
+    producto: Optional[ProductoMostrar]
+    usuario: Optional[UsuarioMostrar]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
 # ============================
-# SCHEMAS COMUNIDAD 
+# SCHEMAS COMUNIDAD
 # ============================
 
 # Categorías
+
 class CategoriaForoCrear(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
+
 
 class CategoriaForoMostrar(BaseModel):
     id: UUID
     nombre: str
     descripcion: Optional[str] = None
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 # Temas
+
 class TemaForoCrear(BaseModel):
     titulo: str
     categoria_id: Optional[UUID] = None
+
 
 class TemaForoActualizar(BaseModel):
     titulo: Optional[str] = None
     categoria_id: Optional[UUID] = None
     fijado: Optional[bool] = None
     cerrado: Optional[bool] = None
+
 
 class TemaForoMostrar(BaseModel):
     id: UUID
@@ -173,17 +180,18 @@ class TemaForoMostrar(BaseModel):
     fijado: bool
     cerrado: bool
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 # Mensajes
+
 class MensajeForoCrear(BaseModel):
     contenido: str
     respuesta_a_id: Optional[UUID] = None  # para responder a otro mensaje
 
+
 class MensajeForoActualizar(BaseModel):
     contenido: str
+
 
 class MensajeForoMostrar(BaseModel):
     id: UUID
@@ -196,24 +204,23 @@ class MensajeForoMostrar(BaseModel):
     editado: bool
     eliminado: bool
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 # Likes
+
 class LikeMensajeMostrar(BaseModel):
     id: UUID
     mensaje_id: UUID
     usuario_id: UUID
     creado_en: datetime
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 # Reportes
+
 class ReporteMensajeCrear(BaseModel):
     motivo: str
+
 
 class ReporteMensajeMostrar(BaseModel):
     id: UUID
@@ -225,8 +232,7 @@ class ReporteMensajeMostrar(BaseModel):
     resuelto_en: Optional[datetime]
     resuelto_por: Optional[UUID]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ======================
 # SCHEMA MENSAJE EN ÁRBOL
@@ -243,15 +249,15 @@ class MensajeForoArbol(BaseModel):
     respuesta_a_id: UUID | None
     respuestas: list["MensajeForoArbol"] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
-MensajeForoArbol.update_forward_refs()
 
+MensajeForoArbol.model_rebuild()
 
 # ============================
 # 🔹 MERCADO: IMÁGENES
 # ============================
+
 class ImagenPublicacionBase(BaseModel):
     url_imagen: str
     orden: Optional[int] = 0
@@ -264,23 +270,22 @@ class ImagenPublicacionCrear(ImagenPublicacionBase):
 class ImagenPublicacionMostrar(ImagenPublicacionBase):
     id: UUID
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 # ============================
 # 🔹 MERCADO: DATOS VENDEDOR
 # ============================
+
 class DatosVendedor(BaseModel):
     id: UUID
     correo: EmailStr
     nombre_publico: Optional[str] = None
     avatar_url: Optional[str] = None
 
-
 # ============================
 # 🔹 MERCADO: PUBLICACIONES
 # ============================
+
 class PublicacionMercadoBase(BaseModel):
     titulo: str
     descripcion: Optional[str] = None
@@ -302,8 +307,7 @@ class PublicacionMercadoMostrar(PublicacionMercadoBase):
     vendedor: DatosVendedor
     imagenes: List[ImagenPublicacionMostrar]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PublicacionMercadoListado(BaseModel):
@@ -315,19 +319,19 @@ class PublicacionMercadoListado(BaseModel):
     imagen_principal: Optional[str]
     vendedor_nombre: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ============================
-# 🔹 MERCADO: IMÁGENES PUBLICACIÓN
+# 🔹 MERCADO: IMÁGENES PUBLICACIÓN (DUPLICADO EN TU ARCHIVO)
 # ============================
+
 class ImagenPublicacionMostrar(BaseModel):
     id: UUID
     url_imagen: str
     orden: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
 # ============================
 # 🔹 MERCADO: CONVERSACION CREAR
 # ============================
@@ -336,9 +340,11 @@ class ConversacionCrear(BaseModel):
     usuario1_id: UUID
     usuario2_id: UUID
     publicacion_id: UUID
+
 # ============================
 # 🔹 MERCADO: CONVERSACION OUT
 # ============================
+
 class ConversacionOut(BaseModel):
     id: UUID
     usuario1_id: UUID
@@ -346,19 +352,22 @@ class ConversacionOut(BaseModel):
     publicacion_id: UUID
     creada_en: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
 # ============================
-#  SCHEMA: MENSAJE CREAR
+# SCHEMA: MENSAJE CREAR
 # ============================
+
 class MensajeCrear(BaseModel):
     conversacion_id: UUID
     remitente_id: UUID
     receptor_id: UUID
     contenido: str
+
 # ============================
 # 🔹 MERCADO: MENSAJE OUT
 # ============================
+
 class MensajeOut(BaseModel):
     id: UUID
     conversacion_id: UUID
@@ -368,8 +377,8 @@ class MensajeOut(BaseModel):
     enviado_en: datetime
     leido: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 class ConversacionItem(BaseModel):
     id: UUID
@@ -379,23 +388,22 @@ class ConversacionItem(BaseModel):
     enviado_en: datetime | None
     no_leidos: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # =============================
-#  SCHEMAS PARA CHAT (mercado)
+# SCHEMAS PARA CHAT (mercado)
 # =============================
 
 class MensajeResponse(BaseModel):
-    id: UUID4
-    remitente_id: UUID4
-    receptor_id: UUID4
+    id: UUID
+    conversacion_id: UUID
+    remitente_id: UUID
+    receptor_id: UUID
     contenido: str
     enviado_en: datetime
     leido: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ConversacionResponse(BaseModel):
@@ -406,8 +414,8 @@ class ConversacionResponse(BaseModel):
     creada_en: datetime
     mensajes: list[MensajeResponse] = []
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 class MensajeResponse(BaseModel):
     id: str
@@ -417,14 +425,14 @@ class MensajeResponse(BaseModel):
     enviado_en: datetime
     leido: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UltimoMensajeResponse(BaseModel):
     contenido: str
     enviado_en: datetime
     remitente_id: str
+
 
 class ConversacionListaResponse(BaseModel):
     id: str

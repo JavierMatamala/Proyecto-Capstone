@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "https://musicpricehub.onrender.com";
 
 export default function ProductoDetallePage() {
   const { id } = useParams();

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
+import {ChatWidget} from "../../chat/chat";
 export default function ReportesPage() {
   const [reportes, setReportes] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -10,7 +10,7 @@ export default function ReportesPage() {
   async function cargarReportes() {
     const token = localStorage.getItem("access_token");
 
-    const res = await fetch("http://localhost:8000/comunidad/reportes/mensajes", {
+    const res = await fetch("https://musicpricehub.onrender.com/comunidad/reportes/mensajes", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -25,7 +25,7 @@ export default function ReportesPage() {
     const token = localStorage.getItem("access_token");
 
     const res = await fetch(
-      `http://localhost:8000/comunidad/reportes/mensajes/${id}`,
+      `https://musicpricehub.onrender.com/comunidad/reportes/mensajes/${id}`,
       {
         method: "PATCH",
         headers: {
@@ -135,6 +135,7 @@ export default function ReportesPage() {
           </table>
         </div>
       </div>
+      <ChatWidget />
     </div>
   );
 }

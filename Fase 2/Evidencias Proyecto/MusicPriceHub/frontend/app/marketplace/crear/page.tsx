@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Upload, PlusCircle } from "lucide-react";
-
+import {ChatWidget} from "../../chat/chat";
 export default function CrearPublicacion() {
   const router = useRouter();
 
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [precio, setPrecio] = useState("");
+  const [precio, setPrecio] = useState<string>("");
   const [ciudad, setCiudad] = useState("");
   const [imagenes, setImagenes] = useState<File[]>([]);
   const [error, setError] = useState("");
@@ -19,6 +19,20 @@ export default function CrearPublicacion() {
     if (e.target.files) {
       setImagenes([...imagenes, ...Array.from(e.target.files)]);
     }
+  };
+
+  // ==== MÁSCARA CLP ====
+
+  const formatearCLP = (valor: string) => {
+    const soloDigitos = valor.replace(/\D/g, "");
+    if (!soloDigitos) return "";
+    return Number(soloDigitos).toLocaleString("es-CL");
+  };
+
+  const handlePrecioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const entrada = e.target.value;
+    const formateado = formatearCLP(entrada);
+    setPrecio(formateado);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,19 +54,22 @@ export default function CrearPublicacion() {
         return;
       }
 
+      // convertir "250.000" -> 250000
+      const precioNumerico = Number(precio.replace(/\./g, ""));
+
       // 1) Crear la publicación sin imágenes
-      const resp = await fetch("https://musicpricehub.onrender.com/mercado/publicaciones", {
+      const resp = await fetch("http://127.0.0.1:8000/mercado/publicaciones", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           titulo,
           descripcion,
-          precio_centavos: Number(precio),
+          precio_centavos: precioNumerico,
           ciudad,
-        })
+        }),
       });
 
       if (!resp.ok) throw new Error("No se pudo crear la publicación");
@@ -65,17 +82,17 @@ export default function CrearPublicacion() {
         formData.append("archivo", img);
 
         await fetch(
-          `https://musicpricehub.onrender.com/mercado/publicaciones/${nueva.id}/imagenes`,
+          `http://127.0.0.1:8000/mercado/publicaciones/${nueva.id}/imagenes`,
           {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
-            body: formData
+            body: formData,
           }
         );
       }
 
       router.push(`/marketplace/${nueva.id}`);
-    } catch (err) {
+    } catch (_) {
       setError("Error al crear la publicación.");
     } finally {
       setCargando(false);
@@ -83,27 +100,31 @@ export default function CrearPublicacion() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 bg-brand-card rounded-2xl shadow-lg border border-brand-accent/20">
+    <main className="max-w-3xl mx-auto p-4">
       <button
         onClick={() => router.back()}
         className="flex items-center text-brand-accent mb-4 hover:underline"
       >
-        <ArrowLeft className="mr-1 h-4 w-4" /> Volver
+        <ArrowLeft className="w-4 h-4 mr-1" />
+        Volver
       </button>
 
-      <h1 className="text-2xl font-bold text-brand-accent mb-6">
+      <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
+        <PlusCircle className="w-6 h-6" />
         Crear publicación
       </h1>
 
-      {error && <p className="text-red-400 mb-4">{error}</p>}
+      {error && (
+        <p className="mb-3 text-sm text-red-500">
+          {error}
+        </p>
+      )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Título */}
         <div>
-          <label className="text-sm text-page-soft">Título</label>
+          <label className="block text-sm font-medium mb-1">Título</label>
           <input
-            type="text"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             className="w-full mt-1 p-2 rounded bg-page border border-brand-accent-soft/40 outline-none"
@@ -113,7 +134,7 @@ export default function CrearPublicacion() {
 
         {/* Descripción */}
         <div>
-          <label className="text-sm text-page-soft">Descripción</label>
+          <label className="block text-sm font-medium mb-1">Descripción</label>
           <textarea
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
@@ -124,21 +145,20 @@ export default function CrearPublicacion() {
 
         {/* Precio */}
         <div>
-          <label className="text-sm text-page-soft">Precio (CLP)</label>
+          <label className="block text-sm font-medium mb-1">Precio (CLP)</label>
           <input
-            type="number"
             value={precio}
-            onChange={(e) => setPrecio(e.target.value)}
+            onChange={handlePrecioChange}
+            inputMode="numeric"
             className="w-full mt-1 p-2 rounded bg-page border border-brand-accent-soft/40 outline-none"
-            placeholder="250000"
+            placeholder="$ 250.000"
           />
         </div>
 
         {/* Ciudad */}
         <div>
-          <label className="text-sm text-page-soft">Ciudad</label>
+          <label className="block text-sm font-medium mb-1">Ciudad</label>
           <input
-            type="text"
             value={ciudad}
             onChange={(e) => setCiudad(e.target.value)}
             className="w-full mt-1 p-2 rounded bg-page border border-brand-accent-soft/40 outline-none"
@@ -148,32 +168,25 @@ export default function CrearPublicacion() {
 
         {/* Imágenes */}
         <div>
-          <label className="text-sm text-page-soft">Imágenes</label>
-
-          <div className="mt-2 p-4 border border-dashed border-brand-accent-soft/50 rounded-xl bg-page cursor-pointer">
-            <label className="flex flex-col items-center justify-center cursor-pointer">
-              <Upload className="h-7 w-7 text-brand-accent mb-2" />
-              <span className="text-brand-accent-soft">Subir imágenes</span>
-              <input
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleImages}
-              />
-            </label>
-          </div>
+          <label className="block text-sm font-medium mb-1">Imágenes</label>
+          <label className="inline-flex items-center px-3 py-2 bg-brand-accent text-black rounded cursor-pointer gap-2">
+            <Upload className="w-4 h-4" />
+            Subir imágenes
+            <input
+              type="file"
+              className="hidden"
+              multiple
+              accept="image/*"
+              onChange={handleImages}
+            />
+          </label>
 
           {imagenes.length > 0 && (
-            <div className="flex gap-2 mt-2 flex-wrap">
+            <ul className="mt-2 text-sm text-gray-300 space-y-1">
               {imagenes.map((img, idx) => (
-                <div
-                  key={idx}
-                  className="w-20 h-20 bg-brand-header rounded-md flex items-center justify-center text-xs text-page-soft border border-brand-accent-soft/20"
-                >
-                  {img.name.substring(0, 12)}…
-                </div>
+                <li key={idx}>{img.name.substring(0, 12)}…</li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
 
@@ -181,11 +194,12 @@ export default function CrearPublicacion() {
         <button
           type="submit"
           disabled={cargando}
-          className="w-full bg-brand-accent text-black font-semibold py-2 rounded-md hover:bg-brand-accent-soft shadow"
+          className="px-4 py-2 rounded bg-brand-accent text-black font-semibold disabled:opacity-60"
         >
           {cargando ? "Creando..." : "Publicar"}
         </button>
       </form>
-    </div>
+      <ChatWidget />
+    </main>
   );
 }

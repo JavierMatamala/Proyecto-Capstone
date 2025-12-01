@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft, User } from "lucide-react";
 
-import { guardarSesion } from "@/utils/auth";
-
 export default function LoginPage() {
   const router = useRouter();
 
@@ -15,16 +13,18 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
       const response = await fetch(
-        "https://musicpricehub.onrender.com/auth/login",
+        "http://127.0.0.1:8000/auth/login",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({ correo, contraseña: contrasena }),
         }
       );
@@ -35,51 +35,53 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-localStorage.setItem(
-  "usuario",
-  JSON.stringify({
-    id: data.usuario.id,
-    correo: data.usuario.correo,
-    nombre: data.usuario.nombre,
-    avatar_url: data.usuario.avatar_url ?? "",
-    es_admin: data.usuario.es_admin
-  })
-);
+      if (data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+      }
 
-
-router.push("/"); 
-
-
+      if (data.usuario) {
+        localStorage.setItem(
+          "usuario",
+          JSON.stringify({
+            id: data.usuario.id,
+            correo: data.usuario.correo,
+            nombre: data.usuario.nombre,
+            avatar_url: data.usuario.avatar_url ?? "",
+            es_admin: data.usuario.es_admin,
+          })
+        );
+      }
+      router.push("/");
       window.location.href = "/";
-    } catch (err) {
+    } catch (_) {
       setError("Correo o contraseña incorrectos.");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-page text-page">
-      <div className="w-[420px] bg-brand-card rounded-2xl shadow-lg p-8">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-md p-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center text-sm text-gray-500 mb-4 hover:text-gray-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Volver
+        </button>
 
-        {/* Volver */}
-        <div className="flex items-center mb-6">
-          <Link
-            href="/"
-            className="text-brand-accent hover:underline flex items-center"
-          >
-            <ArrowLeft size={18} className="mr-1" /> Volver al inicio
-          </Link>
-        </div>
+        <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
+          <User className="w-6 h-6" />
+          Iniciar sesión
+        </h1>
+        <p className="text-gray-600 mb-4">
+          Ingresa tus credenciales para continuar
+        </p>
 
-        {/* Ícono */}
-        <div className="flex flex-col items-center mb-6">
-          <User size={48} className="text-brand-accent" />
-          <h2 className="text-2xl font-bold mt-2">Iniciar Sesión</h2>
-          <p className="text-page-soft text-sm mt-1">
-            Ingresa tus credenciales para continuar
+        {error && (
+          <p className="mb-3 text-sm text-red-500">
+            {error}
           </p>
-        </div>
-
-        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+        )}
 
         {/* FORMULARIO */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -136,6 +138,8 @@ router.push("/");
           </Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }
+
+        

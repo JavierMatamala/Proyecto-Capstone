@@ -1,18 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
+from uuid import UUID
 from models import Conversacion, Mensaje,Perfil
 from schemas import ConversacionCrear, ConversacionOut, MensajeCrear, ConversacionResponse, MensajeResponse,UltimoMensajeResponse,ConversacionListaResponse
 import uuid
 from datetime import datetime
+from sqlalchemy import or_, and_
 router = APIRouter(prefix="/api/chat", tags=["Chat Marketplace"])
 
 # ===========================================
 # 🟦 1. Crear conversación por publicación
 # ===========================================
-@router.post("/conversacion/crear", response_model=ConversacionOut)
-def crear_conversacion(datos: ConversacionCrear, db: Session = Depends(get_db)):
 
+def crear_conversacion_db(datos: ConversacionCrear, db: Session):
     usuario1 = datos.usuario1_id
     usuario2 = datos.usuario2_id
 
@@ -44,11 +45,15 @@ def crear_conversacion(datos: ConversacionCrear, db: Session = Depends(get_db)):
     db.refresh(conversacion)
     return conversacion
 
+@router.post("/conversacion/crear", response_model=ConversacionOut)
+def crear_conversacion(datos: ConversacionCrear, db: Session = Depends(get_db)):
+    return crear_conversacion_db(datos, db)
+
 
 # ===========================================
 # 🟩 2. Enviar mensaje
 # ===========================================
-@router.post("/mensajes/enviar", response_model=MensajeResponse)
+@router.post("/mensajes/enviar")
 def enviar_mensaje(datos: MensajeCrear, db: Session = Depends(get_db)):
 
     conversacion = db.query(Conversacion).filter(
@@ -150,6 +155,57 @@ def listar_conversaciones_usuario(usuario_id: uuid.UUID, db: Session = Depends(g
                 "nombre": otro_usuario.perfil.nombre_publico if otro_usuario and otro_usuario.perfil else "Usuario",
             },
         })
+
+    return resultado
+
+# ===========================================
+# 🟪 4. Buscar chat de marketplace
+# ===========================================
+from models import Usuario  # importa modelo Usuario
+from sqlalchemy import or_
+
+@router.get("/conversaciones/usuario/create/{usuario_id}/{usuario_id2}/{publicacion_id}")
+def listar_conversaciones_usuario(usuario_id: uuid.UUID,usuario_id2: uuid.UUID, publicacion_id: uuid.UUID, db: Session = Depends(get_db)):
+    # 1. Obtener conversaciones donde participa usuario
+    conversacion = (
+        db.query(Conversacion)
+            .filter(
+                and_(
+                    or_(
+                        Conversacion.usuario1_id == usuario_id,
+                        Conversacion.usuario1_id == usuario_id2,
+                        Conversacion.usuario2_id == usuario_id,
+                        Conversacion.usuario2_id == usuario_id2
+                    )
+                )
+            )
+            .first()
+    )
+
+    if not conversacion:
+        #Se confeccionan los datos para crear la conversación
+        data = ConversacionCrear(
+            usuario1_id=usuario_id,
+            usuario2_id=usuario_id2,
+            publicacion_id=publicacion_id
+        )
+        #Se crea conversación nueva
+        nuevaConversacion = crear_conversacion_db(data,db)
+        resultado = {
+            "conversacion": nuevaConversacion,
+            "mensajes": [],
+            "nuevo": True
+        }
+        #Si no existe se crea una nueva conversación
+        return resultado
+    #Si existe la conversación entonces retorna el chat y los mensajes
+    mensajes = db.query(Mensaje).filter(Mensaje.conversacion_id == conversacion.id).order_by(Mensaje.enviado_en.desc()).all()
+
+    resultado = {
+        "conversacion": conversacion,
+        "mensajes": mensajes,
+        "nuevo": False
+    }
 
     return resultado
 

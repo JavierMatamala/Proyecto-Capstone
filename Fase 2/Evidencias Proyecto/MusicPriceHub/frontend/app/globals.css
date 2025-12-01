@@ -118,3 +118,23 @@ body {
   
 }
 
+
+.scroll-custom::-webkit-scrollbar {
+  width: 8px; /* ancho del scroll */
+}
+
+.scroll-custom::-webkit-scrollbar-track {
+  background: #1e293b; /* color del track */
+}
+
+.scroll-custom::-webkit-scrollbar-thumb {
+  background-color: #2563eb; /* color de la barra */
+  border-radius: 9999px; /* bordes redondeados */
+  border: 2px solid #1e293b; /* separador */
+}
+
+/* Para Firefox */
+.scroll-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #2563eb #1e293b;
+}

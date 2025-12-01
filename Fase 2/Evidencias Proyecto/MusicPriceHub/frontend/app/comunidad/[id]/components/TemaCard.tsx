@@ -6,7 +6,9 @@ export default function TemaCard({ tema }: any) {
       </h1>
 
       <p className="text-page-soft text-sm mb-4">
-        Publicado por <span className="text-brand-accent">{tema.usuario}</span> · {tema.fecha}
+        Publicado por <span className="text-brand-accent">{tema.usuario}</span> · {(new Date(tema.fecha).toLocaleString("es-CL", {
+                    timeZone: "America/Santiago",
+                  }))}
       </p>
 
       <p className="text-page leading-relaxed">{tema.contenido}</p>

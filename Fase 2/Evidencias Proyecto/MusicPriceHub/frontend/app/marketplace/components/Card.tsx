@@ -9,7 +9,7 @@ export default function Card({ item }: { item: any }) {
     item.imagen_principal ??
     "https://placehold.co/600x400?text=Sin+Imagen";
 
-  const precio = (item.precio_centavos / 100).toLocaleString("es-CL");
+  const precio = (item.precio_centavos).toLocaleString("es-CL");
 
   return (
     <Link

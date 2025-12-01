@@ -6,7 +6,7 @@ import Gallery from "../components/Gallery";
 import ChatButton from "../components/ChatButton";
 import { ArrowLeft, MapPin, DollarSign } from "lucide-react";
 import Link from "next/link";
-
+import {ChatWidget} from "../../chat/chat";
 // Tipos según tu API
 type Imagen = {
   url_imagen: string;
@@ -21,7 +21,7 @@ type Publicacion = {
   moneda: string;
   ciudad?: string;
   creada_en: string;
-  vendedor_id: string;
+  vendedor: any;
   imagenes?: Imagen[];
 };
 
@@ -30,12 +30,11 @@ export default function PublicacionDetallePage() {
   const [pub, setPub] = useState<Publicacion | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-
   // Cargar publicación individual
   useEffect(() => {
     if (!id) return;
 
-    fetch(`https://musicpricehub.onrender.com/mercado/publicaciones/${id}`)
+    fetch(`http://127.0.0.1:8000/mercado/publicaciones/${id}`)
       .then((r) => r.json())
       .then((data) => {
         setPub(data);
@@ -100,7 +99,7 @@ export default function PublicacionDetallePage() {
           {/* Precio */}
           <p className="text-3xl font-bold text-page mb-2 flex items-center gap-2">
             <DollarSign size={26} className="text-brand-accent" />
-            {(pub.precio_centavos / 100).toLocaleString("es-CL")}
+            {(pub.precio_centavos).toLocaleString("es-CL")}
             <span className="text-xl">{pub.moneda}</span>
           </p>
 
@@ -124,15 +123,14 @@ export default function PublicacionDetallePage() {
           <p className="text-xs text-page-soft mt-6">
             Publicado el: {new Date(pub.creada_en).toLocaleDateString("es-CL")}
           </p>
-
+          <ChatButton
+            vendedorId={pub.vendedor.id}
+            publicacionNombre={pub.titulo}
+            publicacionId={pub.id}
+          />
         </div>
       </div>
-
-      {/* BOTÓN DE CHAT FLOTANTE */}
-      <ChatButton
-        vendedorId={pub.vendedor_id}
-        publicacionId={pub.id}
-      />
+    <ChatWidget />
     </div>
   );
 }

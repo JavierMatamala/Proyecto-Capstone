@@ -42,7 +42,7 @@ export default function EditarProductoPage() {
 
     const cargarProducto = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/productos/${id}`);
+        const res = await fetch(`https://musicpricehub.onrender.com/api/productos/${id}`);
         if (!res.ok) {
           throw new Error("Error al obtener producto");
         }
@@ -132,7 +132,7 @@ export default function EditarProductoPage() {
     };
 
     try {
-      const res = await fetch(`http://localhost:8000/api/productos/${id}`, {
+      const res = await fetch(`https://musicpricehub.onrender.com/api/productos/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

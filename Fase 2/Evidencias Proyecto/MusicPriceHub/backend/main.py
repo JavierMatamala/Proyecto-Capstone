@@ -7,6 +7,8 @@ import os
 from routers.chat import router as chat_router
 from routers.chat_ws import router as chat_ws_router
 
+
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(

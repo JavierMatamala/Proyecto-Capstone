@@ -16,98 +16,102 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
 
-  const handleSubmit = async (e: any) => {
-  e.preventDefault();
-  setError("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
 
-  if (contrasena !== confirmarContrasena) {
-    setError("Las contraseñas no coinciden.");
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      "https://musicpricehub.onrender.com/auth/registro",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre,
-          correo,
-          contraseña: contrasena,
-        }),
-      }
-    );
-
-    // Si la API devuelve 201 o 200 = éxito
-    if (response.status === 201 || response.status === 200) {
-      // Intentar leer JSON si existe
-      let data = null;
-      try {
-        data = await response.json();
-      } catch (_) {
-        data = null;
-      }
-      // Guardar usuario si viene
-      if (data?.usuario) {
-        localStorage.setItem(
-  "usuario",
-  JSON.stringify({
-    id: data.usuario.id,
-    correo: data.usuario.correo,
-    nombre: data.usuario.nombre,
-    avatar_url: data.usuario.avatar_url ?? "",
-    es_admin: data.usuario.es_admin === true
-  })
-);
-      }
-
-      // Redirigir siempre al login
-      router.push("/login");
+    if (contrasena !== confirmarContrasena) {
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
-    // Si NO es éxito, intentar obtener error del backend
-    let errorData = null;
     try {
-      errorData = await response.json();
-    } catch (_) {}
+      const response = await fetch(
+        "http://127.0.0.1:8000/auth/registro",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nombre,
+            correo,
+            contraseña: contrasena,
+          }),
+        }
+      );
 
-    setError(errorData?.detail || "No se pudo crear la cuenta.");
-  } catch (_) {
-    setError("No se pudo crear la cuenta. Intenta nuevamente.");
-  }
-};
+      if (response.status === 201 || response.status === 200) {
+        let data: any = null;
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = null;
+        }
+
+        if (data?.usuario) {
+          localStorage.setItem(
+            "usuario",
+            JSON.stringify({
+              id: data.usuario.id,
+              correo: data.usuario.correo,
+              nombre: data.usuario.nombre,
+              avatar_url: data.usuario.avatar_url ?? "",
+              es_admin: data.usuario.es_admin === true,
+            })
+          );
+        }
+
+        router.push("/login");
+        return;
+      }
+
+      let errorData: any = null;
+      try {
+        errorData = await response.json();
+      } catch (_) {}
+
+      if (errorData && Array.isArray(errorData.detail)) {
+      // típico formato de Pydantic: detail = [{msg, loc, ...}, ...]
+      setError(errorData.detail[0]?.msg ?? "No se pudo crear la cuenta.");
+      } else if (typeof errorData?.detail === "string") {
+        setError(errorData.detail);
+      } else {
+        setError("No se pudo crear la cuenta.");
+      }
+    } catch (_) {
+      setError("Error de conexión al crear la cuenta.");
+    }  
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-page text-page">
-      <div className="w-[420px] bg-brand-card rounded-2xl shadow-lg p-8">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-md p-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center text-sm text-gray-500 mb-4 hover:text-gray-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Volver
+        </button>
 
-        {/* Volver */}
-        <div className="flex items-center mb-6">
-          <Link
-            href="/"
-            className="text-brand-accent hover:underline flex items-center"
-          >
-            <ArrowLeft size={18} className="mr-1" /> Volver al inicio
-          </Link>
-        </div>
+        <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
+          <UserPlus className="w-6 h-6" />
+          Crear cuenta
+        </h1>
+        <p className="text-gray-600 mb-4">
+          Completa tus datos para unirte a MusicPriceHub
+        </p>
 
-        {/* Ícono */}
-        <div className="flex flex-col items-center mb-6">
-          <UserPlus size={48} className="text-brand-accent" />
-          <h2 className="text-2xl font-bold mt-2">Crear Cuenta</h2>
-          <p className="text-page-soft text-sm mt-1 text-center">
-            Completa tus datos para unirte a MusicPriceHub
+        {error && (
+          <p className="mb-3 text-sm text-red-500">
+            {error}
           </p>
-        </div>
+        )}
 
-        {/* Error */}
-        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
-
-        {/* FORMULARIO */}
+                {/* FORMULARIO */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
           {/* Nombre */}
@@ -198,6 +202,8 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }
+
+

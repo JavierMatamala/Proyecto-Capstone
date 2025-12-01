@@ -21,7 +21,7 @@ class Usuario(Base):
     creado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
     actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
 
-    # 🔗 Relaciones
+    # Relaciones
     perfil = relationship("Perfil", back_populates="usuario", uselist=False)
     alertas_precio = relationship("AlertaPrecio", back_populates="usuario", cascade="all, delete-orphan")
     publicaciones_mercado = relationship(
@@ -41,7 +41,7 @@ class Perfil(Base):
     usuario_id = Column(UUID(as_uuid=True), ForeignKey("autenticacion.usuarios.id"), primary_key=True)
     nombre_publico = Column(String, nullable=False)
 
-    # 🔥 NUEVOS CAMPOS
+    # NUEVOS CAMPOS
     region = Column(String)
     comuna = Column(String)
     avatar_url = Column(String)
@@ -50,7 +50,6 @@ class Perfil(Base):
     actualizado_en = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     usuario = relationship("Usuario", back_populates="perfil")
-
 
 # ============================
 # 🔹 MODELO: PRODUCTO

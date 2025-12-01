@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
+import {ChatWidget} from "../chat/chat";
 type TemaForo = {
   id: string;
   titulo: string;
@@ -13,13 +13,13 @@ type TemaForo = {
 export default function ComunidadPage() {
   const [temas, setTemas] = useState<TemaForo[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const cargar = async () => {
       try {
         const res = await fetch(
-          "https://musicpricehub.onrender.com/comunidad/temas"
+          "http://127.0.0.1:8000/comunidad/temas"
         );
         if (!res.ok) throw new Error("Error al obtener temas");
 
@@ -58,6 +58,7 @@ export default function ComunidadPage() {
         ) : (
           <div className="flex flex-col gap-4">
             {temas.map((t) => (
+
               <Link
                 key={t.id}
                 href={`/comunidad/${t.id}`}
@@ -68,7 +69,10 @@ export default function ComunidadPage() {
                 </h2>
 
                 <p className="text-xs text-gray-400 mt-1">
-                  {new Date(t.creado_en).toLocaleString("es-CL")}
+                  {(new Date(t.creado_en).toLocaleString("es-CL", {
+                    timeZone: "America/Santiago",
+                  }))
+                  }
                 </p>
 
                 <p className="text-xs text-[#FBBF24] mt-1">
@@ -79,6 +83,7 @@ export default function ComunidadPage() {
           </div>
         )}
       </div>
+      <ChatWidget />
     </div>
   );
 }

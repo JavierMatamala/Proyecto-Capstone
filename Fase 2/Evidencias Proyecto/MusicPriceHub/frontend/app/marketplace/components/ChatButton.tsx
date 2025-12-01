@@ -1,39 +1,93 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { MessageCircle, X, Send } from "lucide-react";
 
 type ChatButtonProps = {
-  vendedorId: string;          // ID del usuario vendedor
-  publicacionId: string;       // ID de la publicación
-  onClick?: () => void;        // Acción opcional
+  vendedorId: string;
+  publicacionId: string;
+  publicacionNombre: string;
+  onClick?: () => void;
 };
 
 export default function ChatButton({
   vendedorId,
   publicacionId,
+  publicacionNombre,
   onClick,
 }: ChatButtonProps) {
-  
-  // Más adelante verificaremos:
-  // - si el usuario está logeado
-  // - si ya existe conversación
-  // - redirección automática
+  const [open, setOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [usuario, setUsuario] = useState<{ id?: string; nombre?: string }>({});
+
+  // Cargar usuario
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("usuario");
+      if (stored) setUsuario(JSON.parse(stored));
+    } catch (err) {
+      console.error("Error leyendo usuario de localStorage:", err);
+    }
+  }, []);
+  useEffect(() => {
+    if (open && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [open]);
+
+  async function handleToggle() {
+    const dataUsuario = localStorage.getItem("usuario");
+    const usuario = dataUsuario ? JSON.parse(dataUsuario) : null;
+    setOpen((s) => !s);
+    if (onClick) onClick();
+    // Obtener mi id de usuario
+    // Verificar si existe chat, si no, crear uno nuevo
+    const resp = await fetch(`http://127.0.0.1:8000/api/chat/conversaciones/usuario/create/${usuario.id}/${vendedorId}/${publicacionId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+
+    const data = await resp.json();
+    let mensaje = `Hola, estoy interesado en tu publicación sobre ${publicacionNombre}.`;
+    const bodyData = {
+      conversacion_id: data.conversacion.id,
+      remitente_id: usuario.id,
+      receptor_id: vendedorId,
+      contenido: mensaje,
+    };
+
+    window.dispatchEvent(
+      new CustomEvent("abrir-chat", {
+        detail: {
+          data : bodyData
+        },
+      })
+    );
+  }
 
   return (
-    <button
-      onClick={onClick}
-      className="
-        fixed bottom-6 right-6
-        flex items-center gap-2
-        bg-brand-accent text-[#020617]
-        px-5 py-3 rounded-full shadow-lg
-        font-semibold transition
-        hover:bg-brand-accent-soft
-        z-50
-      "
-    >
-      <MessageCircle className="h-5 w-5" />
-      Chat
-    </button>
-  );
+  <>
+    {usuario.id && usuario.id !== vendedorId && (
+      <button
+        onClick={handleToggle}
+        aria-expanded={open}
+        aria-controls={`chat-panel-${publicacionId}`}
+        className="
+          bottom-2 right-2
+          flex items-center gap-2
+          bg-[#155efc] text-[#020617]
+          w-45
+          px-5 py-3 rounded-full shadow-lg
+          font-semibold transition
+          hover:bg-brand-accent-soft
+        "
+      >
+        <MessageCircle className="h-5 w-5" />
+        Enviar mensaje
+      </button>
+    )}
+  </>
+);
 }

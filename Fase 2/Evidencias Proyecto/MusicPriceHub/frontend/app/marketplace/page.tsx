@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ProductCard from "./components/Card";
 import Filters from "./components/Filters";
 import SkeletonCard from "./components/SkeletonCard";
+import {ChatWidget} from "../chat/chat";
 
 // Tipos según tu API
 type Imagen = {
@@ -28,10 +29,12 @@ export default function MarketplacePage() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [filtroTexto, setFiltroTexto] = useState("");
+  const [filtroMin, setFiltroMin] = useState(null);
+  const [filtroMax, setFiltroMax] = useState(null);
+  const [filtroOrden, setFiltroOrden] = useState("");
 
-  // Cargar publicaciones desde tu API en Render
   useEffect(() => {
-    fetch("https://musicpricehub.onrender.com/mercado/publicaciones")
+    fetch("http://127.0.0.1:8000/mercado/publicaciones")
       .then((res) => res.json())
       .then((data) => {
         setPublicaciones(data);
@@ -42,11 +45,36 @@ export default function MarketplacePage() {
         setCargando(false);
       });
   }, []);
+  const aplicarFiltro = (filtro:any) => {
+    setFiltroTexto(filtro.texto || "");
+    setFiltroMin(filtro.precioMin || null);
+    setFiltroMax(filtro.precioMax || null);
+    setFiltroOrden(filtro.orden || "");
+  };
+  const publicacionesFiltradas = publicaciones
+  .filter(pub => {
 
-  // Filtro básico por título
-  const publicacionesFiltradas = publicaciones.filter((p) =>
-    p.titulo.toLowerCase().includes(filtroTexto.toLowerCase())
-  );
+    if (filtroTexto && filtroTexto !== "") {
+      if (!pub.titulo.toLowerCase().includes(filtroTexto.toLowerCase())) {
+        return false;
+      }
+    }
+    
+    if (filtroMin != null) {
+      if (pub.precio_centavos < filtroMin) return false;
+
+    }
+
+    if (filtroMax != null) {
+      if (pub.precio_centavos > filtroMax) return false;
+    }
+    return true;
+  })
+  if (filtroOrden === "precio_asc") {
+      publicaciones.sort((a, b) => a.precio_centavos - b.precio_centavos);
+    } else if (filtroOrden === "precio_desc") {
+      publicaciones.sort((a, b) => b.precio_centavos - a.precio_centavos);
+    }
 
   return (
     <div className="px-4 py-6 max-w-7xl mx-auto">
@@ -57,7 +85,7 @@ export default function MarketplacePage() {
       </h1>
 
       {/* FILTROS */}
-      <Filters onChange={(filtros) => setFiltroTexto(filtros.texto)} />
+      <Filters onChange={(filtros) => aplicarFiltro(filtros)} />
 
       {/* ERROR */}
       {error && (
@@ -97,6 +125,7 @@ export default function MarketplacePage() {
           </p>
         )}
       </div>
+      <ChatWidget />
     </div>
   );
 }
