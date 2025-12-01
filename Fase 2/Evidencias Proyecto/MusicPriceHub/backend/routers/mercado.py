@@ -15,6 +15,7 @@ import uuid
 import models, schemas
 from database import get_db
 from utils.seguridad import get_current_user
+from pydantic import BaseModel
 
 router = APIRouter(
     prefix="/mercado",
@@ -28,7 +29,6 @@ def build_publicacion_detalle(
 ) -> schemas.PublicacionMercadoMostrar:
     vendedor = pub.vendedor
     perfil = getattr(vendedor, "perfil", None)
-
     datos_vendedor = schemas.DatosVendedor(
         id=vendedor.id,
         correo=vendedor.correo,
@@ -56,10 +56,10 @@ def build_publicacion_detalle(
         imagenes=imagenes,
     )
 
-
 # ============================
 # POST /mercado/publicaciones → Crear publicación
 # ============================
+
 @router.post(
     "/publicaciones",
     response_model=schemas.PublicacionMercadoMostrar,
@@ -80,6 +80,7 @@ def crear_publicacion(
         ciudad=data.ciudad,
         estado="activa",
     )
+
     db.add(pub)
     db.flush()  # para tener pub.id
 
@@ -98,10 +99,10 @@ def crear_publicacion(
 
     return build_publicacion_detalle(pub, db)
 
-
 # ============================
 # POST /mercado/publicaciones/{id}/imagenes → Subir fotos (archivos)
 # ============================
+
 @router.post(
     "/publicaciones/{publicacion_id}/imagenes",
     response_model=List[schemas.ImagenPublicacionMostrar],
@@ -119,6 +120,7 @@ async def subir_imagenes_publicacion(
         .filter(models.PublicacionMercado.id == publicacion_id)
         .first()
     )
+
     if not pub:
         raise HTTPException(status_code=404, detail="Publicación no encontrada")
 
@@ -142,8 +144,8 @@ async def subir_imagenes_publicacion(
         .order_by(models.ImagenPublicacion.orden.desc())
         .first()
     )
-    orden_actual = max_orden.orden + 1 if max_orden else 0
 
+    orden_actual = max_orden.orden + 1 if max_orden else 0
     imagenes_creadas: List[models.ImagenPublicacion] = []
     extensiones_permitidas = {".jpg", ".jpeg", ".png", ".webp"}
 
@@ -172,6 +174,7 @@ async def subir_imagenes_publicacion(
             url_imagen=url_publica,
             orden=orden_actual,
         )
+
         db.add(img)
         imagenes_creadas.append(img)
         orden_actual += 1
@@ -184,10 +187,67 @@ async def subir_imagenes_publicacion(
 
     return [schemas.ImagenPublicacionMostrar.from_orm(img) for img in imagenes_creadas]
 
+# ============================
+# NUEVO: POST /mercado/publicaciones/{id}/imagenes-cloud → registrar URL Cloudinary
+# ============================
+
+class ImagenCloudCrear(BaseModel):
+    url_imagen: str
+
+@router.post(
+    "/publicaciones/{publicacion_id}/imagenes-cloud",
+    response_model=schemas.ImagenPublicacionMostrar,
+    status_code=status.HTTP_201_CREATED,
+)
+def agregar_imagen_cloudinary(
+    publicacion_id: UUID,
+    data: ImagenCloudCrear,
+    db: Session = Depends(get_db),
+    usuario_actual: models.Usuario = Depends(get_current_user),
+):
+    # Verificar publicación
+    pub = (
+        db.query(models.PublicacionMercado)
+        .filter(models.PublicacionMercado.id == publicacion_id)
+        .first()
+    )
+    if not pub:
+        raise HTTPException(status_code=404, detail="Publicación no encontrada")
+
+    # Verificar permisos
+    if pub.vendedor_id != usuario_actual.id and not getattr(
+        usuario_actual, "es_admin", False
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="No tienes permiso para subir imágenes a esta publicación",
+        )
+
+    # Calcular orden
+    max_orden = (
+        db.query(models.ImagenPublicacion)
+        .filter(models.ImagenPublicacion.publicacion_id == publicacion_id)
+        .order_by(models.ImagenPublicacion.orden.desc())
+        .first()
+    )
+    orden = max_orden.orden + 1 if max_orden else 0
+
+    img = models.ImagenPublicacion(
+        publicacion_id=publicacion_id,
+        url_imagen=data.url_imagen,
+        orden=orden,
+    )
+
+    db.add(img)
+    db.commit()
+    db.refresh(img)
+
+    return schemas.ImagenPublicacionMostrar.from_orm(img)
 
 # ============================
 # GET /mercado/publicaciones → Listar marketplace
 # ============================
+
 @router.get(
     "/publicaciones",
     response_model=List[schemas.PublicacionMercadoListado],
@@ -211,7 +271,6 @@ def listar_publicaciones(
         )
 
     pubs = query.order_by(models.PublicacionMercado.creada_en.desc()).all()
-
     resultado: List[schemas.PublicacionMercadoListado] = []
     for p in pubs:
         perfil = p.vendedor.perfil if p.vendedor else None

@@ -49,7 +49,7 @@ useEffect(() => {
   fetch("https://musicpricehub.onrender.com/api/productos/")
     .then((res) => res.json())
     .then((data) => {
-      console.log("📦 PRODUCTOS RECIBIDOS DESDE LA API:", data);
+      console.log("PRODUCTOS RECIBIDOS DESDE LA API:", data);
       setProductos(data);
     })
     .catch(() => setError("No se pudo conectar con la API."));

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import ProductCard from "./components/Card";
 import Filters from "./components/Filters";
 import SkeletonCard from "./components/SkeletonCard";
 import {ChatWidget} from "../chat/chat";
 
-// Tipos según tu API
+// Tipos según API
 type Imagen = {
   url_imagen: string;
   orden: number;
@@ -25,6 +26,7 @@ type Publicacion = {
 };
 
 export default function MarketplacePage() {
+  const router = useRouter();
   const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -45,12 +47,14 @@ export default function MarketplacePage() {
         setCargando(false);
       });
   }, []);
+
   const aplicarFiltro = (filtro:any) => {
     setFiltroTexto(filtro.texto || "");
     setFiltroMin(filtro.precioMin || null);
     setFiltroMax(filtro.precioMax || null);
     setFiltroOrden(filtro.orden || "");
   };
+
   const publicacionesFiltradas = publicaciones
   .filter(pub => {
 
@@ -76,56 +80,67 @@ export default function MarketplacePage() {
       publicaciones.sort((a, b) => b.precio_centavos - a.precio_centavos);
     }
 
-  return (
-    <div className="px-4 py-6 max-w-7xl mx-auto">
-
-      {/* TÍTULO */}
-      <h1 className="text-3xl font-bold mb-6 text-brand-accent">
-        🛒 Marketplace
+return (
+  <main className="max-w-7xl mx-auto px-4 py-6">
+    {/* Fila 1: título + botón */}
+    <div className="flex items-center justify-between mb-4">
+      <h1 className="text-2xl font-bold flex items-center gap-2">
+        <span role="img" aria-label="cart">
+          🛒
+        </span>
+        Marketplace
       </h1>
 
-      {/* FILTROS */}
-      <Filters onChange={(filtros) => aplicarFiltro(filtros)} />
+      <button
+        onClick={() => router.push("/marketplace/crear")}
+        className="px-4 py-2 rounded bg-brand-accent text-black font-semibold hover:bg-brand-accent/90"
+      >
+        Crear publicación
+      </button>
+    </div>
 
-      {/* ERROR */}
-      {error && (
-        <p className="text-red-400 text-center mt-4">{error}</p>
-      )}
+    {/* Fila 2: sidebar + contenido */}
+    <div className="flex gap-6 items-start">
+      {/* Sidebar más angosto, pegado a la izquierda */}
+      <aside className="w-64 bg-[#020617] rounded-lg p-4 border border-brand-accent-soft/40 shrink-0">
+        <Filters onChange={(filtros) => aplicarFiltro(filtros)} />
+      </aside>
 
-      {/* GRID DE PRODUCTOS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+      {/* Contenido principal con más ancho */}
+      <section className="flex-1">
+        {error && (
+          <p className="mb-3 text-sm text-red-500">
+            {error}
+          </p>
+        )}
 
-        {/* Mientras carga → Skeletons */}
-        {cargando &&
-          [...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {cargando &&
+            [...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
 
-        {/* Si ya cargó */}
-        {!cargando &&
-          publicacionesFiltradas.map((pub) => (
-            <ProductCard
+          {!cargando &&
+            publicacionesFiltradas.map((pub) => (
+              <ProductCard
                 key={pub.id}
                 item={{
-                    id: pub.id,
-                    titulo: pub.titulo,
-                    precio_centavos: pub.precio_centavos,
-                    ciudad: pub.ciudad,
-                    imagen:
-                        pub.imagenes?.length
-                            ? pub.imagenes[0].url_imagen
-                            : "https://placeholder.co/600x400?text=Sin+imagen",
+                  ...pub,
+                  imagen_principal:
+                    (pub as any).imagen_principal ??
+                    (pub.imagenes?.[0]?.url_imagen ?? null),
                 }}
-            />
+              />
+            ))}
+        </div>
 
-          ))}
-
-        {/* No hay resultados */}
         {!cargando && publicacionesFiltradas.length === 0 && (
-          <p className="col-span-full text-center text-page-soft">
+          <p className="mt-4 text-sm text-page-soft">
             No se encontraron publicaciones.
           </p>
         )}
-      </div>
-      <ChatWidget />
+      </section>
     </div>
-  );
+
+    <ChatWidget />
+  </main>
+);
 }

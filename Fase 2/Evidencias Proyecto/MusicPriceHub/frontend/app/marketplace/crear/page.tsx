@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Upload, PlusCircle } from "lucide-react";
 import {ChatWidget} from "../../chat/chat";
 export default function CrearPublicacion() {
+  
   const router = useRouter();
-
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState<string>("");
@@ -79,14 +79,32 @@ export default function CrearPublicacion() {
       // 2) Subir las imágenes (si hay)
       for (const img of imagenes) {
         const formData = new FormData();
-        formData.append("archivo", img);
+        formData.append("file", img);
 
+        // 2.1 Subir a Cloudinary a través de tu backend
+        const resUpload = await fetch("https://musicpricehub.onrender.com/upload/imagen", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!resUpload.ok) {
+          throw new Error("No se pudo subir una imagen a Cloudinary");
+        }
+
+        const dataUpload = await resUpload.json(); // { url, public_id }
+
+        // 2.2 Registrar la URL en la publicación
         await fetch(
-          `https://musicpricehub.onrender.com/mercado/publicaciones/${nueva.id}/imagenes`,
+          `https://musicpricehub.onrender.com/mercado/publicaciones/${nueva.id}/imagenes-cloud`,
           {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url_imagen: dataUpload.url,
+            }),
           }
         );
       }

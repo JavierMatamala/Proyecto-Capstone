@@ -12,7 +12,7 @@ type Producto = {
   especificaciones?: any;
   precio_base_centavos?: number | null;
   imagen_url?: string | null;
-  url_fuente?: string | null; // 🔥 AGREGADO
+  url_fuente?: string | null;
 };
 
 export default function EditarProductoPage() {
@@ -27,7 +27,7 @@ export default function EditarProductoPage() {
     descripcion: "",
     especificaciones: "",
     precio_base_centavos: "",
-    url_fuente: "", // 🔥 AGREGADO
+    url_fuente: "",
   });
 
   const [imagenUrlActual, setImagenUrlActual] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export default function EditarProductoPage() {
             data.precio_base_centavos != null
               ? String(data.precio_base_centavos)
               : "",
-          url_fuente: data.url_fuente ?? "", // 🔥 AGREGADO
+          url_fuente: data.url_fuente ?? "",
         });
 
         setImagenUrlActual(data.imagen_url ?? null);
@@ -115,7 +115,7 @@ export default function EditarProductoPage() {
     }
 
     // ============================================================
-    //  🔥 PAYLOAD con URL fuente incluida
+    //  PAYLOAD con URL fuente incluida
     // ============================================================
     const payload = {
       nombre: form.nombre,
@@ -128,7 +128,7 @@ export default function EditarProductoPage() {
           ? parseInt(form.precio_base_centavos, 10)
           : null,
       imagen_url: nuevaImagenUrl ?? imagenUrlActual,
-      url_fuente: form.url_fuente || null, // 🔥 AGREGADO
+      url_fuente: form.url_fuente || null,
     };
 
     try {
@@ -142,7 +142,7 @@ export default function EditarProductoPage() {
 
       setMensaje("✅ Producto actualizado correctamente");
 
-      // 🔥 REDIRECCIÓN A LA PRINCIPAL (Ajusta si tu ruta es distinta)
+      // REDIRECCIÓN A LA PRINCIPAL
       router.push("/");
 
     } catch (err) {
@@ -203,7 +203,7 @@ export default function EditarProductoPage() {
           />
         </div>
 
-        {/* 🔥 URL Fuente */}
+        {/* URL Fuente */}
         <div>
           <label className="block mb-1 text-sm text-page-soft">
             URL fuente

@@ -62,7 +62,6 @@ export default function PublicacionDetallePage() {
       </div>
     );
   }
-
   return (
     <div className="px-4 py-6 max-w-5xl mx-auto">
 
@@ -99,7 +98,7 @@ export default function PublicacionDetallePage() {
           {/* Precio */}
           <p className="text-3xl font-bold text-page mb-2 flex items-center gap-2">
             <DollarSign size={26} className="text-brand-accent" />
-            {(pub.precio_centavos).toLocaleString("es-CL")}
+            {(pub?.precio_centavos).toLocaleString("es-CL")}
             <span className="text-xl">{pub.moneda}</span>
           </p>
 
@@ -125,6 +124,7 @@ export default function PublicacionDetallePage() {
           </p>
           <ChatButton
             vendedorId={pub.vendedor.id}
+            vendedor={pub.vendedor}
             publicacionNombre={pub.titulo}
             publicacionId={pub.id}
           />

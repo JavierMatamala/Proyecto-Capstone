@@ -6,6 +6,7 @@ import { MessageCircle, X, Send } from "lucide-react";
 type ChatButtonProps = {
   vendedorId: string;
   publicacionId: string;
+  vendedor: any;
   publicacionNombre: string;
   onClick?: () => void;
 };
@@ -13,6 +14,7 @@ type ChatButtonProps = {
 export default function ChatButton({
   vendedorId,
   publicacionId,
+  vendedor,
   publicacionNombre,
   onClick,
 }: ChatButtonProps) {
@@ -40,9 +42,10 @@ export default function ChatButton({
     const usuario = dataUsuario ? JSON.parse(dataUsuario) : null;
     setOpen((s) => !s);
     if (onClick) onClick();
+    console.log(vendedor);
     // Obtener mi id de usuario
     // Verificar si existe chat, si no, crear uno nuevo
-    const resp = await fetch(`https://musicpricehub.onrender.com/api/chat/conversaciones/usuario/create/${usuario.id}/${vendedorId}/${publicacionId}`, {
+    const resp = await fetch(`https://musicpricehub.onrender.com/api/chat/conversaciones/usuario/create/${usuario.id}/${vendedor.id}/${publicacionId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -5,8 +5,8 @@ import { MapPin, Heart } from "lucide-react";
 
 export default function Card({ item }: { item: any }) {
   const imagen =
-    item.imagenes?.[0]?.url_imagen ??
     item.imagen_principal ??
+    item.imagenes?.[0]?.url_imagen ??
     "https://placehold.co/600x400?text=Sin+Imagen";
 
   const precio = (item.precio_centavos).toLocaleString("es-CL");
