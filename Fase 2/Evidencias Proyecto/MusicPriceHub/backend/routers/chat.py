@@ -168,18 +168,20 @@ from sqlalchemy import or_
 def listar_conversaciones_usuario(usuario_id: uuid.UUID,usuario_id2: uuid.UUID, publicacion_id: uuid.UUID, db: Session = Depends(get_db)):
     # 1. Obtener conversaciones donde participa usuario
     conversacion = (
-        db.query(Conversacion)
-            .filter(
+    db.query(Conversacion)
+        .filter(
+            or_(
                 and_(
-                    or_(
-                        Conversacion.usuario1_id == usuario_id,
-                        Conversacion.usuario1_id == usuario_id2,
-                        Conversacion.usuario2_id == usuario_id,
-                        Conversacion.usuario2_id == usuario_id2
-                    )
+                    Conversacion.usuario1_id == usuario_id,
+                    Conversacion.usuario2_id == usuario_id2
+                ),
+                and_(
+                    Conversacion.usuario1_id == usuario_id2,
+                    Conversacion.usuario2_id == usuario_id
                 )
             )
-            .first()
+        )
+        .first()
     )
 
     if not conversacion:
