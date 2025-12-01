@@ -72,7 +72,7 @@ export const ChatWidget: React.FC = () => {
   useEffect(() => {
     if (!usuario.id) return;
 
-    const wsUrl = `ws://musicpricehub.onrender.com/api/chat/ws/notifications/${usuario.id}`;
+    const wsUrl = `wss://musicpricehub.onrender.com/api/chat/ws/notifications/${usuario.id}`;
     wsNotification.current = new WebSocket(wsUrl);
 
     wsNotification.current.onopen = () => console.log("Conectado a notificaciones");
@@ -142,7 +142,7 @@ export const ChatWidget: React.FC = () => {
     if (!usuario.id) return;
     if (wsMap.current[conversacionId]) return;
 
-    const wsUrl = `ws://musicpricehub.onrender.com/api/chat/ws/chat/${conversacionId}`;
+    const wsUrl = `wss://musicpricehub.onrender.com/api/chat/ws/chat/${conversacionId}`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
