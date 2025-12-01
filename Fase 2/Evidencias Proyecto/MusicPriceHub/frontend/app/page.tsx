@@ -24,7 +24,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const resp = await fetch("http://127.0.0.1:8000/productos");
+        const resp = await fetch("https://musicpricehub.onrender.com/productos");
         if (!resp.ok) {
           const err = await resp.json().catch(() => null);
           setError(

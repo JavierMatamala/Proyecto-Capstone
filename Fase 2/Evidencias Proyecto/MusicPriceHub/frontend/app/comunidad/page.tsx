@@ -19,7 +19,7 @@ export default function ComunidadPage() {
     const cargar = async () => {
       try {
         const res = await fetch(
-          "http://127.0.0.1:8000/comunidad/temas"
+          "https://musicpricehub.onrender.com/comunidad/temas"
         );
         if (!res.ok) throw new Error("Error al obtener temas");
 

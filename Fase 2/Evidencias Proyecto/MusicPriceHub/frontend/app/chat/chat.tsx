@@ -72,7 +72,7 @@ export const ChatWidget: React.FC = () => {
   useEffect(() => {
     if (!usuario.id) return;
 
-    const wsUrl = `ws://127.0.0.1:8000/api/chat/ws/notifications/${usuario.id}`;
+    const wsUrl = `ws://musicpricehub.onrender.com/api/chat/ws/notifications/${usuario.id}`;
     wsNotification.current = new WebSocket(wsUrl);
 
     wsNotification.current.onopen = () => console.log("Conectado a notificaciones");
@@ -95,7 +95,7 @@ export const ChatWidget: React.FC = () => {
     const cargarChats = async () => {
       try {
         const resp = await fetch(
-          `http://127.0.0.1:8000/api/chat/conversaciones/usuario/${usuario.id}`,
+          `https://musicpricehub.onrender.com/api/chat/conversaciones/usuario/${usuario.id}`,
           { headers: { "Content-Type": "application/json" } }
         );
         const dataChats: Chat[] = await resp.json();
@@ -124,7 +124,7 @@ export const ChatWidget: React.FC = () => {
     if (!usuario.id) return;
     try {
       const resp = await fetch(
-        `http://127.0.0.1:8000/api/chat/mensajes/${conversacion_id}`,
+        `https://musicpricehub.onrender.com/api/chat/mensajes/${conversacion_id}`,
         { headers: { "Content-Type": "application/json" } }
       );
       const data: MensajeWS[] = await resp.json();
@@ -142,7 +142,7 @@ export const ChatWidget: React.FC = () => {
     if (!usuario.id) return;
     if (wsMap.current[conversacionId]) return;
 
-    const wsUrl = `ws://127.0.0.1:8000/api/chat/ws/chat/${conversacionId}`;
+    const wsUrl = `ws://musicpricehub.onrender.com/api/chat/ws/chat/${conversacionId}`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {

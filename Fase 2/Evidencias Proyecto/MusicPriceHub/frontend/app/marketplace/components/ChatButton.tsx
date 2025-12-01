@@ -42,7 +42,7 @@ export default function ChatButton({
     if (onClick) onClick();
     // Obtener mi id de usuario
     // Verificar si existe chat, si no, crear uno nuevo
-    const resp = await fetch(`http://127.0.0.1:8000/api/chat/conversaciones/usuario/create/${usuario.id}/${vendedorId}/${publicacionId}`, {
+    const resp = await fetch(`https://musicpricehub.onrender.com/api/chat/conversaciones/usuario/create/${usuario.id}/${vendedorId}/${publicacionId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

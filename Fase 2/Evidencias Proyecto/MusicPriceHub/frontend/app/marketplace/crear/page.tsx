@@ -58,7 +58,7 @@ export default function CrearPublicacion() {
       const precioNumerico = Number(precio.replace(/\./g, ""));
 
       // 1) Crear la publicación sin imágenes
-      const resp = await fetch("http://127.0.0.1:8000/mercado/publicaciones", {
+      const resp = await fetch("https://musicpricehub.onrender.com/mercado/publicaciones", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -82,7 +82,7 @@ export default function CrearPublicacion() {
         formData.append("archivo", img);
 
         await fetch(
-          `http://127.0.0.1:8000/mercado/publicaciones/${nueva.id}/imagenes`,
+          `https://musicpricehub.onrender.com/mercado/publicaciones/${nueva.id}/imagenes`,
           {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },

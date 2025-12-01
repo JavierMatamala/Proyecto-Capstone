@@ -34,7 +34,7 @@ export default function PublicacionDetallePage() {
   useEffect(() => {
     if (!id) return;
 
-    fetch(`http://127.0.0.1:8000/mercado/publicaciones/${id}`)
+    fetch(`https://musicpricehub.onrender.com/mercado/publicaciones/${id}`)
       .then((r) => r.json())
       .then((data) => {
         setPub(data);

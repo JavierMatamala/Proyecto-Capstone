@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {ChatWidget} from "../chat/chat";
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://musicpricehub.onrender.com";
 
 // =========================
 //  DATOS REGIONES Y COMUNAS
