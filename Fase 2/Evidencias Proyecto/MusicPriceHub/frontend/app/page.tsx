@@ -24,7 +24,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const resp = await fetch("https://musicpricehub.onrender.com/productos");
+        const resp = await fetch("https://musicpricehub.onrender.com/api/productos/");
         if (!resp.ok) {
           const err = await resp.json().catch(() => null);
           setError(

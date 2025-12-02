@@ -3,6 +3,7 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface HistorialItem {
+  id: string;
   precio_centavos: number;
   moneda: string;
   fecha: string;
@@ -10,9 +11,9 @@ interface HistorialItem {
 }
 
 export default function HistorialPrecios({ data }: { data: HistorialItem[] }) {
-  
+
   const formatoCLP = (v: number) =>
-    (v / 100).toLocaleString("es-CL", {
+    (v).toLocaleString("es-CL", {
       style: "currency",
       currency: "CLP",
       maximumFractionDigits: 0,

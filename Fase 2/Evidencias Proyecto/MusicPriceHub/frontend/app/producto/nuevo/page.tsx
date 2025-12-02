@@ -83,7 +83,7 @@ if (imagen) {
   const dataImg = await resImg.json();
   imagen_url = dataImg.secure_url;
 }
-
+console.log("llega aqui");
 // AHORA ARMAMOS EL PAYLOAD
 const payload = {
   nombre: form.nombre,

@@ -441,13 +441,16 @@ class ConversacionListaResponse(BaseModel):
     otro_usuario_nombre: str
     ultimo_mensaje: Optional[UltimoMensajeResponse] = None
 
+# ============================
+#  TIENDAS / TIENDA_PRODUCTO
+# ============================
 
 
 class TiendaProductoCrear(BaseModel):
-    tienda_id: str
-    producto_id: str
+    tienda_id: UUID
+    producto_id: UUID
     url_producto: str
-    sku_tienda: str | None = None
+    sku_tienda: Optional[str] = None
 
 
 class OfertaCrear(BaseModel):
@@ -455,3 +458,36 @@ class OfertaCrear(BaseModel):
     precio_centavos: int
     disponibilidad: str = "Disponible"
     moneda: str = "CLP"
+
+class TiendaCrear(BaseModel):
+    nombre: str
+    sitio_web: Optional[str] = None
+    url: Optional[str] = None
+
+class TiendaProductoEditar(BaseModel):
+    url_producto: str
+
+class TiendaProductoOut(BaseModel):
+    id: UUID
+    tienda_id: UUID
+    producto_id: UUID
+    tienda_nombre: str
+    url_producto: str
+
+    class Config:
+        from_attributes = True
+
+# ============================
+#  HISTORIAL
+# ============================
+
+class HistorialPrecioPunto(BaseModel):
+    fecha_listado: datetime
+    precio_centavos: int
+
+    class Config:
+        orm_mode = True
+
+
+class AlertaCrear(BaseModel):
+    precio_objetivo: int

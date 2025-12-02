@@ -2,33 +2,63 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import HistorialPrecios from "../../../components/HistorialPrecios";
 
 const API_URL = "https://musicpricehub.onrender.com";
 
 export default function ProductoDetallePage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params.id as string;
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [historial, setHistorial] = useState<any[]>([]);
+  // ---------------- ALERTAS ----------------
+  const [alertaOpen, setAlertaOpen] = useState(false);
+  const [precioObjetivo, setPrecioObjetivo] = useState("");
+  const [mensajeAlerta, setMensajeAlerta] = useState("");
+  const [usuario, setUsuario] = useState<any>(null);
+  const [token, setToken] = useState<string | null>(null);
+  // Nueva alerta tipo toast
+  const [alertaExitosa, setAlertaExitosa] = useState("");
+  // ----------------------------------------
 
-  // 🔹 estado para formulario de tiendas/ofertas
-  const [tiendas, setTiendas] = useState<any[]>([]);
-  const [tiendaId, setTiendaId] = useState("");
-  const [urlProducto, setUrlProducto] = useState("");
-  const [precioOferta, setPrecioOferta] = useState("");
-  const [disponibilidad, setDisponibilidad] = useState("Disponible");
-  const [formMsg, setFormMsg] = useState("");
-  const [formLoading, setFormLoading] = useState(false);
+  // Cargar usuario/token después de render
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const t = localStorage.getItem("access_token");
+      const raw = localStorage.getItem("usuario");
 
-  // ============================
-  // CARGAR DETALLE PRODUCTO
-  // ============================
+      let u = null;
+      try {
+        u = raw ? JSON.parse(raw) : null;
+      } catch {
+        u = null;
+      }
+
+      setToken(t);
+      setUsuario(u);
+    }
+    const cargarHistorial = async () => {
+      try {
+        console.log("ID del producto desde useParams:", id);
+        // 🔹 Obtener historial
+        const resHist = await fetch(`${API_URL}/api/precios/historial/${id}`);
+        const dataHist = await resHist.json();
+        setHistorial(dataHist);
+      } catch (err) {
+        console.error("Error cargando datos:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargarHistorial();
+  }, []);
+
   const cargarDetalle = async () => {
     if (!id) return;
     try {
-      const res = await fetch(
-        `${API_URL}/api/productos/${id}/detalle-frontend`
-      );
+      const res = await fetch(`${API_URL}/api/productos/${id}/detalle-frontend`);
       const json = await res.json();
       setData(json);
     } catch (err) {
@@ -42,22 +72,49 @@ export default function ProductoDetallePage() {
     cargarDetalle();
   }, [id]);
 
-  // ============================
-  // CARGAR LISTA DE TIENDAS
-  // ============================
-  useEffect(() => {
-    const cargarTiendas = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/tiendas`);
-        if (!res.ok) return;
-        const json = await res.json();
-        setTiendas(json);
-      } catch (err) {
-        console.error("Error al cargar tiendas", err);
+  // ---------------- CREAR ALERTA ----------------
+  const crearAlerta = async () => {
+    setMensajeAlerta("");
+
+    // Validación final
+    if (!token || !usuario || !usuario.id) {
+      setMensajeAlerta("Debes iniciar sesión para crear alertas.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/productos/${id}/alertas/crear`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          precio_objetivo: Number(precioObjetivo),
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setMensajeAlerta(json.detail || "Error desconocido.");
+        return;
       }
-    };
-    cargarTiendas();
-  }, []);
+
+      // ÉXITO
+      setAlertaOpen(false);
+      setPrecioObjetivo("");
+
+      // 🔥 Mostrar toast de éxito
+      setAlertaExitosa("Alerta creada exitosamente ✔️");
+
+      setTimeout(() => setAlertaExitosa(""), 3000);
+
+    } catch (err) {
+      setMensajeAlerta("Error al conectar con el servidor.");
+    }
+  };
+  // ------------------------------------------------
 
   if (loading || !data) {
     return (
@@ -70,201 +127,132 @@ export default function ProductoDetallePage() {
   const p = data.producto;
   const precios = data.precios ?? [];
 
-  // ============================
-  // HANDLER: AGREGAR OFERTA
-  // ============================
-  const handleAgregarOferta = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormMsg("");
-    if (!id) return;
-    if (!tiendaId || !urlProducto || !precioOferta) {
-      setFormMsg("Completa todos los campos.");
-      return;
-    }
-
-    try {
-      setFormLoading(true);
-
-      // 1) Crear relación TiendaProducto
-      const resTP = await fetch(`${API_URL}/api/tiendas/agregar-producto`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tienda_id: tiendaId,
-          producto_id: id,
-          url_producto: urlProducto,
-          sku_tienda: null,
-        }),
-      });
-
-      if (!resTP.ok) {
-        const errText = await resTP.text();
-        console.error("Error tienda_producto:", errText);
-        throw new Error("No se pudo asociar la tienda al producto");
-      }
-
-      const tp = await resTP.json();
-      const tiendaProductoId = tp.tienda_producto.id;
-
-      // 2) Crear oferta (precio) asociada a esa tienda_producto
-      const resOferta = await fetch(`${API_URL}/api/tiendas/agregar-oferta`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tienda_producto_id: tiendaProductoId,
-          precio_centavos: parseInt(precioOferta, 10),
-          disponibilidad,
-          moneda: "CLP",
-        }),
-      });
-
-      if (!resOferta.ok) {
-        const errText = await resOferta.text();
-        console.error("Error oferta:", errText);
-        throw new Error("No se pudo crear la oferta");
-      }
-
-      setFormMsg("✅ Oferta agregada correctamente");
-      setUrlProducto("");
-      setPrecioOferta("");
-      setDisponibilidad("Disponible");
-
-      // recargar detalle para ver la nueva lista de precios
-      cargarDetalle();
-    } catch (err: any) {
-      console.error(err);
-      setFormMsg("❌ Error al agregar la oferta");
-    } finally {
-      setFormLoading(false);
-    }
-  };
+  const preciosOrdenados = [...precios].sort((a, b) => a.precio - b.precio);
 
   return (
-    <main className="max-w-6xl mx-auto p-6 flex gap-10">
-      {/* Imagen */}
-      <div className="flex-1 flex justify-center">
-        <img
-          src={p.imagen_url}
-          alt={p.nombre}
-          className="w-[420px] h-[420px] object-cover rounded-xl shadow"
-        />
-      </div>
+    <main className="max-w-7xl mx-auto p-6 flex flex-col gap-10">
 
-      {/* Info + precios */}
-      <div className="flex-1">
-        <h1 className="text-3xl font-bold mb-2">{p.nombre}</h1>
-        <p className="text-gray-400 mb-6">
-          {p.marca} {p.modelo}
-        </p>
+      {/* ========================================================== */}
+      <div className="grid grid-cols-[1fr_1.3fr_0.8fr] gap-10 items-start">
 
-        <p className="mb-6 whitespace-pre-line">{p.descripcion}</p>
-
-        <h2 className="text-xl font-semibold mb-3">Precios por tienda</h2>
-
-        {precios.length === 0 && (
-          <p className="text-gray-500 mb-4">
-            Este producto no tiene ofertas aún.
-          </p>
-        )}
-
-        <div className="space-y-3 mb-8">
-          {precios.map((x: any, i: number) => (
-            <a
-              key={i}
-              href={x.url_producto}
-              className="block p-4 rounded-lg bg-[#111827] hover:bg-[#1f2937]"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div className="flex justify-between items-center">
-                <strong>{x.tienda}</strong>
-                <span className="text-brand-accent font-bold text-lg">
-                  ${(x.precio).toLocaleString("es-CL")}
-                </span>
-              </div>
-              <p className="text-gray-400 text-sm">{x.disponibilidad}</p>
-            </a>
-          ))}
+        {/* IMAGEN */}
+        <div className="flex justify-center">
+          <img
+            src={p.imagen_url}
+            alt={p.nombre}
+            className="w-[420px] h-[420px] object-cover rounded-xl shadow"
+          />
         </div>
 
-        {/* ============================
-            FORMULARIO: AGREGAR OFERTA
-           ============================ */}
-        <section className="mt-6 p-4 rounded-xl bg-[#020617] border border-gray-800">
-          <h3 className="text-lg font-semibold mb-3">
-            Agregar oferta de tienda (uso interno)
-          </h3>
+        {/* TÍTULO */}
+        <div>
+          <h1 className="text-3xl font-bold mb-2 flex items-center justify-between">
+            {p.nombre}
 
-          {formMsg && (
-            <p className="mb-3 text-sm">
-              {formMsg}
+            {/* BOTÓN DE ALERTA */}
+            <button
+              onClick={() => setAlertaOpen(true)}
+              className="ml-4 px-4 py-2 bg-brand-accent text-black text-sm font-semibold rounded hover:bg-brand-accent-soft"
+            >
+              Crear alerta
+            </button>
+          </h1>
+
+          <p className="text-gray-400 mb-4">
+            {p.marca} {p.modelo}
+          </p>
+
+          <p className="whitespace-pre-line leading-relaxed text-gray-300">
+            {p.descripcion}
+          </p>
+        </div>
+
+        {/* PRECIOS POR TIENDA */}
+        <div>
+          <h2 className="text-xl font-semibold mb-3">Precios por tienda</h2>
+
+          {preciosOrdenados.length === 0 && (
+            <p className="text-gray-500 mb-4">
+              Este producto no tiene ofertas aún.
             </p>
           )}
 
-          <form className="space-y-3" onSubmit={handleAgregarOferta}>
-            {/* Tienda */}
-            <div>
-              <label className="block text-sm mb-1">Tienda</label>
-              <select
-                className="w-full p-2 rounded bg-brand-card"
-                value={tiendaId}
-                onChange={(e) => setTiendaId(e.target.value)}
+          <div className="space-y-3">
+            {preciosOrdenados.map((x: any, i: number) => (
+              <a
+                key={i}
+                href={x.url_producto}
+                className="block p-4 rounded-lg bg-[#111827] hover:bg-[#1f2937]"
+                target="_blank"
+                rel="noreferrer"
               >
-                <option value="">Selecciona una tienda</option>
-                {tiendas.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* URL producto */}
-            <div>
-              <label className="block text-sm mb-1">
-                URL del producto en la tienda
-              </label>
-              <input
-                className="w-full p-2 rounded bg-brand-card"
-                placeholder="https://tienda.cl/producto-123"
-                value={urlProducto}
-                onChange={(e) => setUrlProducto(e.target.value)}
-              />
-            </div>
-
-            {/* Precio */}
-            <div>
-              <label className="block text-sm mb-1">
-                Precio oferta (en centavos, ej: 1299990)
-              </label>
-              <input
-                type="number"
-                className="w-full p-2 rounded bg-brand-card"
-                value={precioOferta}
-                onChange={(e) => setPrecioOferta(e.target.value)}
-              />
-            </div>
-
-            {/* Disponibilidad */}
-            <div>
-              <label className="block text-sm mb-1">Disponibilidad</label>
-              <input
-                className="w-full p-2 rounded bg-brand-card"
-                value={disponibilidad}
-                onChange={(e) => setDisponibilidad(e.target.value)}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={formLoading}
-              className="bg-brand-accent text-black px-4 py-2 rounded font-semibold w-full disabled:opacity-60"
-            >
-              {formLoading ? "Guardando..." : "Agregar oferta"}
-            </button>
-          </form>
-        </section>
+                <div className="flex justify-between items-center">
+                  <strong>{x.tienda}</strong>
+                  <span className="text-brand-accent font-bold text-lg">
+                    ${x.precio.toLocaleString("es-CL")}
+                  </span>
+                </div>
+                <p className="text-gray-400 text-sm">{x.disponibilidad}</p>
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* HISTORIAL */}
+      <HistorialPrecios data={historial} />
+
+      {/* ================== MODAL ALERTA ================== */}
+      {alertaOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-[#0f172a] p-6 rounded-xl shadow-xl w-[360px] border border-gray-700">
+
+            <h3 className="text-lg font-semibold text-brand-accent mb-3">
+              Crear alerta de precio
+            </h3>
+
+            <p className="text-gray-400 mb-3">
+              Recibirás una notificación cuando este producto baje al precio que indiques.
+            </p>
+
+            <input
+              type="number"
+              placeholder="Ej: 1000000"
+              value={precioObjetivo}
+              onChange={(e) => setPrecioObjetivo(e.target.value)}
+              className="w-full p-2 rounded bg-[#1e293b] text-white border border-gray-600 focus:ring-2 focus:ring-brand-accent mb-4"
+            />
+
+            {mensajeAlerta && (
+              <p className="text-red-400 text-sm mb-3">{mensajeAlerta}</p>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setAlertaOpen(false)}
+                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={crearAlerta}
+                className="px-4 py-2 bg-brand-accent text-black font-semibold rounded hover:bg-brand-accent-soft"
+              >
+                Crear alerta
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================== TOAST EXITOSO ================== */}
+      {alertaExitosa && (
+        <div className="fixed bottom-6 right-6 bg-brand-accent text-black px-5 py-3 rounded-lg shadow-xl text-sm font-semibold animate-fadeIn z-[9999]">
+          {alertaExitosa}
+        </div>
+      )}
+
     </main>
   );
 }

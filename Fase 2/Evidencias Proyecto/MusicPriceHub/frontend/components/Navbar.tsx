@@ -11,7 +11,7 @@ import {
   Moon,
   UserCircle,
 } from "lucide-react";
-
+// import { usePathname } from "next/navigation";
 type Theme = "light" | "dark";
 
 export default function Navbar() {
@@ -135,6 +135,7 @@ if (u) {
       Hola, {usuario.nombre}
     </span>
 
+
     {/* Botón cerrar sesión */}
     <button
       onClick={logout}
@@ -210,10 +211,15 @@ if (u) {
           <Link href="/comunidad" className="rounded px-2 py-1 hover:bg-page/20 text-white">
             Comunidad
           </Link>
+            {usuario && (
+              <Link
+                href="/perfil/alertas"
+                className="rounded px-2 py-1 hover:bg-page/20 text-brand-accent font-semibold"
+              >
+                🔔 Mis alertas
+              </Link>
+            )}
 
-          <Link href="/historial" className="rounded px-2 py-1 hover:bg-page/20 text-white">
-            Historial de precios
-          </Link>
             {/* 🔥 SOLO ADMIN: agregar producto */}
             {usuario?.es_admin && (
               <Link
@@ -223,6 +229,25 @@ if (u) {
                 ➕ Agregar producto
               </Link>
             )}
+            
+          {/* 🔥 SOLO ADMIN: administrar tiendas */}
+          {usuario?.es_admin && (
+            <Link
+              href="/admin/tiendas"
+              className="rounded px-2 py-1 hover:bg-page/20 text-brand-accent font-semibold"
+            >
+              🏬 Administrar tiendas
+            </Link>
+          )}
+          {usuario?.es_admin &&  (
+            <Link
+              href={`/admin/producto`}
+              className="rounded px-2 py-1 hover:bg-page/20 text-brand-accent font-semibold"
+            >
+              ⚙️ Administrar precios del producto
+            </Link>
+          )}
+
             {usuario?.es_admin && (
               <Link
                 href="/comunidad/moderar"
@@ -230,8 +255,8 @@ if (u) {
               >
                 Moderar reportes
               </Link>
-            
             )}
+
           {!usuario && (
             <Link
               href="/login"
